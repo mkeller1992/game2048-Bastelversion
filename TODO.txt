@@ -1,0 +1,10 @@
+
+GUI:
+ - Add NumberOfMoves
+ - Add TimeElapsed
+ - Add Highscore
+
+Engine:
+ - Zug rückgängig machen
+
+KI:

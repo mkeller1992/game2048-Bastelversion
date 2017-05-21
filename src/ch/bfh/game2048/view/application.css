@@ -1,0 +1,10 @@
+   #yellow_cell .table-row-cell:selected{
+    -fx-background-color: yellow;
+     -fx-font-weight: bold;
+}
+
+.noheader .column-header-background {
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+}
