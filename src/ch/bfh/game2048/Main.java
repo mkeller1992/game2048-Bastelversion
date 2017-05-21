@@ -77,7 +77,6 @@ public class Main extends Application {
 		}
 			
 	    stage.setOnCloseRequest(e -> {
-	    	System.out.println("Was here");
 	        controller.writeScores();
 	        Platform.exit();
 	        System.exit(0);
