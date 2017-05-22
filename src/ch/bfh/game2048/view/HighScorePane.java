@@ -96,7 +96,7 @@ public class HighScorePane extends VBox {
 		TableColumn tblNumbOfMoves = new TableColumn(conf.getPropertyAsString("colTitleNumbOfMoves.dialog"));
 		TableColumn tblDate = new TableColumn(conf.getPropertyAsString("colTitleDateTime.dialog"));
 
-		tblRank.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("rankAsString"));
+		tblRank.setCellValueFactory(new PropertyValueFactory<GameStatistics, String>("rankAsString"));
 		tblName.setCellValueFactory(new PropertyValueFactory<GameStatistics, String>("playerName"));
 		tblScore.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("score"));
 		tblHighestTile.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("highestValue"));

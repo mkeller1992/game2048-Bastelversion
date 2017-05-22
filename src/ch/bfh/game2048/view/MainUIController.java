@@ -39,6 +39,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
 public class MainUIController implements Observer {
 
@@ -99,6 +100,8 @@ public class MainUIController implements Observer {
 	private Highscore highscoreList;
 	private String playerName;
 	private Config conf;
+	
+
 
 	private int numberOfColumns = 4;
 
@@ -175,9 +178,10 @@ public class MainUIController implements Observer {
 		}
 
 		game = new GameEngine(numberOfColumns, stats);
+		game.addObserver(this);
+		
 		liveHighscorePane.setGameEngine(game);
 
-		stats.addObserver(this);
 		timer = new Timer();
 		timer.addObserver(this);
 		fromIntToLabel(game.getBoard());
@@ -194,7 +198,7 @@ public class MainUIController implements Observer {
 
 		// If a game is currently ongoing or paused --> Switch between pause and
 		// resume
-		if (game.getStats() != null && game.getStats().isGameOver() == false) {
+		if (game.getStats() != null && game.isGameOver() == false) {
 			if (isRunning) {
 				timer.stop();
 				game.getStats().pauseTime();
@@ -393,26 +397,27 @@ public class MainUIController implements Observer {
 			});
 		}
 
-		else if (o instanceof GameStatistics) {
+		else if (arg instanceof String) {
 
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
 
-					GameStatistics stats = (GameStatistics) o;
+					String pushObject = (String) arg;
 
-					if (stats.isGameOver()) {
-						processGameOver(stats);
+					if (pushObject.equals("gameOver")) {
+						processGameOver(game.getStats());
 					}
 
-					else if (stats.isGameContinue() == false && stats.getHighestValue() == conf.getPropertyAsInt("winningNumber")) {
+					else if (pushObject.equals("gameWon")) {
 
 						VictoryAlert dialog = new VictoryAlert(conf.getPropertyAsString("victoryTitle.alert"), conf.getPropertyAsString("victoryText.alert"));
 						boolean continuation = dialog.show();
 						if (continuation) {
-							stats.setGameContinue(true);
+							game.setGameContinue(true);
 						} else {
-							stats.setGameOver(true);
+							game.getStats().stopTime(true);
+							processGameOver(game.getStats());
 						}
 					}
 				}

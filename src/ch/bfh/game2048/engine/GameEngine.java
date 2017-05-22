@@ -5,11 +5,15 @@ import java.util.Observable;
 import ch.bfh.game2048.model.Direction;
 import ch.bfh.game2048.model.GameStatistics;
 import ch.bfh.game2048.model.Tile;
+import ch.bfh.game2048.persistence.Config;
 
 public class GameEngine extends Observable {
 	int boardSize;
 	Tile[][] board;
 	GameStatistics stats;
+
+	private boolean gameOver = false;
+	private boolean gameContinue = false;
 
 	/**
 	 * Constructor 1 of the GameEngine, Initializes the board of a given size
@@ -18,14 +22,13 @@ public class GameEngine extends Observable {
 	 * @param boardSize
 	 *            size of the board
 	 */
-	
-	public GameEngine(int boardSize){
+
+	public GameEngine(int boardSize) {
 		this.boardSize = boardSize;
 		board = new Tile[boardSize][boardSize];
 		initGameBoard();
 	}
-	
-	
+
 	/**
 	 * Constructor 2 of the GameEngine, Initializes the board with the given size and spawns random tiles.
 	 * All the statistics are recorded in the given GameStatistics-Object.
@@ -42,10 +45,26 @@ public class GameEngine extends Observable {
 		board = new Tile[boardSize][boardSize];
 
 		initGameBoard();
-		
+
 		spawnRandomTile();
 		spawnRandomTile();
-		
+
+	}
+
+	public boolean isGameOver() {
+		return gameOver;
+	}
+
+	public void setGameOver(boolean gameOver) {
+		this.gameOver = gameOver;
+	}
+
+	public boolean isGameContinue() {
+		return gameContinue;
+	}
+
+	public void setGameContinue(boolean gameContinue) {
+		this.gameContinue = gameContinue;
 	}
 
 	/**
@@ -86,7 +105,7 @@ public class GameEngine extends Observable {
 	 */
 	public boolean move(Direction dir) {
 		boolean moved = false;
-				
+
 		resetMergedInfo();
 
 		moved = moveBoard(dir);
@@ -94,11 +113,13 @@ public class GameEngine extends Observable {
 		if (moved) {
 			stats.incrementMoves();
 			spawnRandomTile();
-			if(isGameOver()){
-			stats.setGameOver(true);
+			if (checkIfGameOver()) {
+				setGameOver(true);
+				setChanged();
+				notifyObservers("gameOver");
 			}
-		}		
-		
+		}
+
 		return moved;
 	}
 
@@ -145,8 +166,7 @@ public class GameEngine extends Observable {
 					 * the Tile and in which direction.
 					 */
 					int moveBy = moveTile(row, col, dir);
-					boolean merged = mergeTile(row + (moveBy * dir.getRowStep()), col + (moveBy * dir.getColStep()),
-							dir);
+					boolean merged = mergeTile(row + (moveBy * dir.getRowStep()), col + (moveBy * dir.getColStep()), dir);
 
 					if (moveBy > 0 || merged) {
 						validMove = true;
@@ -167,8 +187,7 @@ public class GameEngine extends Observable {
 	 * @return movedBy number of steps the tile was moved
 	 */
 	private int moveTile(int row, int col, Direction dir) {
-		if (col + dir.getColStep() < boardSize && col + dir.getColStep() >= 0 && row + dir.getRowStep() < boardSize
-				&& row + dir.getRowStep() >= 0) {
+		if (col + dir.getColStep() < boardSize && col + dir.getColStep() >= 0 && row + dir.getRowStep() < boardSize && row + dir.getRowStep() >= 0) {
 
 			if (board[row + dir.getRowStep()][col + dir.getColStep()].getValue() == 0) {
 				Tile tmp = board[row + dir.getRowStep()][col + dir.getColStep()];
@@ -193,8 +212,7 @@ public class GameEngine extends Observable {
 	 */
 	private boolean mergeTile(int row, int col, Direction dir) {
 		// check for borders
-		if (row + dir.getRowStep() >= 0 && row + dir.getRowStep() < boardSize && col + dir.getColStep() >= 0
-				&& col + dir.getColStep() < boardSize) {
+		if (row + dir.getRowStep() >= 0 && row + dir.getRowStep() < boardSize && col + dir.getColStep() >= 0 && col + dir.getColStep() < boardSize) {
 
 			Tile tile1 = board[row][col];
 			Tile tile2 = board[row + dir.getRowStep()][col + dir.getColStep()];
@@ -214,13 +232,17 @@ public class GameEngine extends Observable {
 				board[row + dir.getRowStep()][col + dir.getColStep()].setMerged(true);
 
 				stats.addScore(mergedValue);
-				
-				if(mergedValue > 0){
-					System.out.println("Notify");
+
+				if (mergedValue > 0) {
 					setChanged();
-					notifyObservers();						
+					notifyObservers("wasMerged");
 				}
-								
+				
+				if(isGameContinue()==false && mergedValue == Config.getInstance().getPropertyAsInt("winningNumber")){
+					setChanged();
+					notifyObservers("gameWon");
+				}				
+
 				if (mergedValue > stats.getHighestValue()) {
 					stats.setHighestValue(mergedValue);
 				}
@@ -229,9 +251,8 @@ public class GameEngine extends Observable {
 		}
 		return false;
 	}
-	
 
-	private boolean isGameOver() {
+	public boolean checkIfGameOver() {
 		boolean boardFull = true;
 
 		for (int i = 0; i < boardSize; i++) {
@@ -245,8 +266,7 @@ public class GameEngine extends Observable {
 			for (int row = 0; row < boardSize; row++) {
 				for (int col = 0; col < boardSize; col++) {
 					for (Direction dir : Direction.values()) {
-						if (row + dir.getRowStep() >= 0 && row + dir.getRowStep() < boardSize
-								&& col + dir.getColStep() >= 0 && col + dir.getColStep() < boardSize) {
+						if (row + dir.getRowStep() >= 0 && row + dir.getRowStep() < boardSize && col + dir.getColStep() >= 0 && col + dir.getColStep() < boardSize) {
 							Tile tile1 = board[row][col];
 							Tile tile2 = board[row + dir.getRowStep()][col + dir.getColStep()];
 							if (tile1.getValue() == tile2.getValue()) {
@@ -298,8 +318,8 @@ public class GameEngine extends Observable {
 	protected void setBoard(Tile[][] board) {
 		this.board = board;
 	}
-	
-	public Tile[][] getBoard(){
+
+	public Tile[][] getBoard() {
 		return board;
 	}
 

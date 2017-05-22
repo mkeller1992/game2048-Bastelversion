@@ -14,7 +14,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import ch.bfh.game2048.persistence.Config;
 
 @XmlType(propOrder = { "playerName", "score", "highestValue", "amountOfMoves", "startMil" ,"endMil","boardSize", "timeOfAddingToScoreList" })
-public class GameStatistics extends Observable {
+public class GameStatistics {
 	
 	
 	private String playerName;
@@ -32,8 +32,7 @@ public class GameStatistics extends Observable {
 	private long TimeOfAddingToScoreList;
 	private int rank;
 	private int boardSize;	
-	private boolean gameOver;
-	private boolean gameContinue;
+
 
 	DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.getDefault());
 	NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
@@ -52,11 +51,7 @@ public class GameStatistics extends Observable {
 		this.startMil = System.currentTimeMillis();
 		this.endMil = 0;
 		this.pauseTimeMil = 0;
-		this.boardSize = boardSize;
-		this.gameOver = false;
-		this.gameContinue = false;
-		
-		
+		this.boardSize = boardSize;			
 	}
 
 	
@@ -72,8 +67,6 @@ public class GameStatistics extends Observable {
 	
 	private void setFormattedDate(String formattedDate){		
 	}
-	
-	
 	
 	public void setPlayerName(String playerName){
 		this.playerName = playerName;
@@ -125,8 +118,6 @@ public class GameStatistics extends Observable {
 
 	public void setHighestValue(int highestValue) {
 		this.highestValue = highestValue;
-		setChanged();
-		notifyObservers();
 	}
 
 	public String getFormattedDate() {
@@ -164,26 +155,10 @@ public class GameStatistics extends Observable {
 		this.boardSize = boardSize;
 	}
 
-	@XmlTransient
-	public boolean isGameOver() {
-		return gameOver;
-	}
-
-	public void setGameOver(boolean gameOver) {
-		this.gameOver = gameOver;
+	public void stopTime(boolean gameOver) {
 		setEndMil(System.currentTimeMillis()-pauseTimeMil);
 		setTimeOfAddingToScoreList(System.currentTimeMillis());
-		setChanged();
-		notifyObservers();
-	}
 
-	public void setGameContinue(boolean gameContinue) {
-		this.gameContinue = gameContinue;
-	}
-
-	@XmlTransient
-	public boolean isGameContinue() {
-		return gameContinue;
 	}
 	
 	public void pauseTime(){
@@ -202,6 +177,5 @@ public class GameStatistics extends Observable {
 	public void setTimeOfAddingToScoreList(long timeOfAddingToScoreList) {
 		TimeOfAddingToScoreList = timeOfAddingToScoreList;
 	}
-	
 	
 }

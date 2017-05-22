@@ -39,13 +39,13 @@ public class LiveHighScoreView extends VBox implements Observer {
 
 	@SuppressWarnings({ "rawtypes" })
 	public LiveHighScoreView(Highscore highscoreManager, int boardSize) {
-		
+
 		this.highscoreManager = highscoreManager;
-		
+
 		this.boardSize = boardSize;
 		maxNumberOfScoresOnExtract = Config.getInstance().getPropertyAsInt("maxNumberOfScoresOnExtract");
 
-		conf = Config.getInstance();	
+		conf = Config.getInstance();
 
 		// Assemble TableView
 
@@ -88,25 +88,25 @@ public class LiveHighScoreView extends VBox implements Observer {
 		refreshContent();
 
 		table.getStyleClass().add("noheader");
-		
+
 		this.getChildren().addAll(table, buttonPanel);
-		
+
 	}
 
 	public void setActiveStats(GameStatistics activeStats) {
 		this.activeStats = activeStats;
 	}
-	
+
 	public void removeActiveStats() {
 		this.activeStats = null;
 	}
-	
-	public void setOnlineScoreHandler(OnlineScoreHandler onlineScoreHandler){
+
+	public void setOnlineScoreHandler(OnlineScoreHandler onlineScoreHandler) {
 		this.onlineScoreHandler = onlineScoreHandler;
-		onlineScoreHandler.addObserver(this);	
+		onlineScoreHandler.addObserver(this);
 	}
-	
-	public void setGameEngine(GameEngine engine){
+
+	public void setGameEngine(GameEngine engine) {
 		this.engine = engine;
 		engine.addObserver(this);
 	}
@@ -115,37 +115,40 @@ public class LiveHighScoreView extends VBox implements Observer {
 
 		List scoreList = highscoreManager.getListExtract(boardSize, maxNumberOfScoresOnExtract, activeStats);
 
-		masterList = FXCollections.observableArrayList(scoreList);		
+		masterList = FXCollections.observableArrayList(scoreList);
 		table.setItems(masterList);
-		
+
 		if (activeStats != null) {
-			int indexOfCurrentScore = highscoreManager.getRankOfListEntry(scoreList, activeStats)-1;
+			int indexOfCurrentScore = highscoreManager.getRankOfListEntry(scoreList, activeStats) - 1;
 			table.getSelectionModel().select(indexOfCurrentScore);
 		}
-		
-		table.refresh();	
+
+		table.refresh();
 	}
 
 	@Override
 	public void update(Observable o, Object arg) {
 
 		System.out.println("Was here");
-		
+
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-			
-				if(o instanceof OnlineScoreHandler){			
+
+				if (o instanceof OnlineScoreHandler) {
 					System.out.println("NEW Highscore!!");
 					refreshContent();
-					
-				}		
-				else if(o instanceof GameEngine){			
-					refreshContent();				
-				}								
+
+				} else if (arg instanceof String) {
+
+					String pushObject = (String) arg;
+
+					if (pushObject.equals("wasMerged")) {
+						refreshContent();
+					}
+				}
 			}
-		}
-	);
+		});
 	}
 
 }
