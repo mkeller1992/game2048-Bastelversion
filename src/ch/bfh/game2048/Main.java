@@ -16,7 +16,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -63,9 +63,9 @@ public class Main extends Application {
 
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("view/MainUI.fxml"));
-			HBox root = (HBox) loader.load();
+			VBox root = (VBox) loader.load();
 			this.controller = (MainUIController) loader.getController();
-			this.mainScene = new Scene(root, 760, 530);
+			this.mainScene = new Scene(root, 760, 580);
 			this.stage = primaryStage;
 			stage.setTitle("2048 by M&M");
 			stage.getIcons().add(new Image(getClass().getResourceAsStream("meteor.png")));

@@ -35,11 +35,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.util.Pair;
 
 public class MainUIController implements Observer {
 
@@ -87,6 +87,9 @@ public class MainUIController implements Observer {
 	
 	@FXML
 	private Label newScoreArrivedPoints;
+
+    @FXML
+    private Pane tickerPane;
 
 	private SuperLabel[][] labelList;
 
