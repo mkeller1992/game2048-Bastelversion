@@ -13,6 +13,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import com.google.firebase.database.DatabaseReference;
 
 import ch.bfh.game2048.Main;
+import ch.bfh.game2048.Paginatior;
 import ch.bfh.game2048.engine.GameEngine;
 import ch.bfh.game2048.model.Direction;
 import ch.bfh.game2048.model.GameStatistics;
@@ -177,6 +178,11 @@ public class MainUIController implements Observer {
 			centerStage();
 			break;
 		case HIGHSCORE:
+			
+//			Paginatior pagenat = new Paginatior(highscoreList,this,getSizeOfBoard());
+//			centerStage();
+			
+			
 			HighScorePane highScorePane = new HighScorePane(highscoreList, this, numberOfColumns);
 			highScorePane.highlightRow(rankToHighlight - 1);
 
