@@ -1,16 +1,11 @@
 package ch.bfh.game2048;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.bind.JAXBException;
-
 import ch.bfh.game2048.model.GameStatistics;
-import ch.bfh.game2048.view.HighScorePane;
 import ch.bfh.game2048.view.MainUIController;
-import ch.bfh.game2048.view.Scenes;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -28,35 +23,12 @@ public class Main extends Application {
 	static ReentrantLock lock = new ReentrantLock();
 	
 	static ArrayList<GameStatistics> finalScoreArray = new ArrayList<GameStatistics>();
-	static boolean transferOngoing = false;
 
 	public static Stage getStage() {
 		return stage;
 	}
 
-	public static void switchScene(Scenes nextScene, int rankToHighlight) throws FileNotFoundException, JAXBException {
 
-		switch (nextScene) {
-		case MAINSCENE:
-			stage.setScene(mainScene);
-			return;
-		case HIGHSCORE:
-
-			HighScorePane highScorePane = controller.getHighScorePane();
-			highScorePane.highlightRow(rankToHighlight - 1);
-
-			Scene scene = new Scene(highScorePane, 770, 550);
-			scene.getStylesheets().add(mainScene.getStylesheets().get(0));
-			stage.setScene(scene);
-			controller.centerStage();
-			break;
-		case SETTINGS:
-			break;
-		default:
-			break;
-
-		}
-	}
 
 	@Override
 	public void start(Stage primaryStage) {

@@ -88,12 +88,10 @@ public class OnlineScoreHandler extends Observable {
 			    @Override
 			    public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
 			    	GameStatistics justArrivedScore = dataSnapshot.getValue(GameStatistics.class);
-
-					setChanged();
 				
 					
 					if(System.currentTimeMillis()-justArrivedScore.getTimeOfAddingToScoreList() < 120000){
-						
+						setChanged();
 						notifyObservers(new PushObject(justArrivedScore));				  	    	
 				    	System.out.println("New Score:"+justArrivedScore);
 						

@@ -1,6 +1,7 @@
 package ch.bfh.game2048.view;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
@@ -14,6 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -40,6 +42,7 @@ public class HighScorePane extends VBox {
 
 	Highscore highscores;
 	Config conf;
+	MainUIController mainUI;
 
 	EventHandler<Event> btnSolHandler;
 
@@ -47,10 +50,11 @@ public class HighScorePane extends VBox {
 	FilteredList<GameStatistics> filteredData;
 
 	@SuppressWarnings({ "rawtypes" })
-	public HighScorePane(Highscore highscores, int boardSize) {
+	public HighScorePane(Highscore highscores, MainUIController mainUI, int boardSize) {
 
 		this.highscores = highscores;
 		conf = Config.getInstance();
+		this.mainUI = mainUI;
 
 		// Assemble titlePane
 
@@ -163,8 +167,7 @@ public class HighScorePane extends VBox {
 		BoardSizes selectedEntry = (BoardSizes) boardSizeList.getSelectionModel().getSelectedItem();
 
 		List<GameStatistics> baseList = highscores.getFilteredHighscoreList(selectedEntry.getBoardSize());
-		baseList = highscores.sortSetRanksResizeList(baseList,
-				Config.getInstance().getPropertyAsInt("maxNumberOfScores"));
+		baseList = highscores.sortSetRanksResizeList(baseList, Config.getInstance().getPropertyAsInt("maxNumberOfScores"));
 
 		masterList = FXCollections.observableArrayList(baseList);
 		filteredData = new FilteredList<>(masterList, p -> true);
@@ -189,12 +192,7 @@ public class HighScorePane extends VBox {
 			@Override
 			public void handle(Event event) {
 
-				try {
-					Main.switchScene(Scenes.MAINSCENE, 0);
-				} catch (FileNotFoundException | JAXBException e) {
-					e.printStackTrace();
-				}
-
+				mainUI.switchScene(Scenes.MAINSCENE, 0);
 			}
 		};
 		return btnSolHandler;

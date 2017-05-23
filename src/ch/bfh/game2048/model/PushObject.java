@@ -1,5 +1,11 @@
 package ch.bfh.game2048.model;
 
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+
 public class PushObject {
 
 	GameStatistics statisticsObject;
@@ -13,11 +19,29 @@ public class PushObject {
 		return statisticsObject;
 	}
 
-	public void setStatisticsObject(GameStatistics statisticsObject) {
-		this.statisticsObject = statisticsObject;
+
+	public TextFlow toText() {
+
+		Text name = new Text(statisticsObject.getPlayerName());
+		Text reached = new Text(" reached ");
+		Text score = new Text("" + statisticsObject.getScore()+" Pts");
+
+		Text boardSize = new Text(" on a " + statisticsObject.getBoardSize() + "x" + statisticsObject.getBoardSize() + " board");
+
+		TextFlow result = new TextFlow();
+		result.getChildren().addAll(name, reached, score, boardSize);
+
+		name.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
+		name.setFill(Color.WHITE);
+		reached.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
+		reached.setFill(Color.LIGHTGREY);
+		score.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
+		score.setFill(Color.WHITE);
+		boardSize.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
+		boardSize.setFill(Color.LIGHTGREY);
+		
+		return result;
+
 	}
-	
-	
-	
-	
+
 }

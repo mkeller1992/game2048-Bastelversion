@@ -10,8 +10,7 @@
 <?import java.util.ArrayList?>
 <?import javafx.scene.layout.BorderPane?>
 
-
-<VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.bfh.game2048.view.MainUIController">
+<VBox style="-fx-background-color: linear-gradient(#69B4E4 0%, #0070B9 0%);" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.bfh.game2048.view.MainUIController">
    <children>
       <HBox spacing="25">
            <padding>
@@ -46,12 +45,12 @@
             				</Label>
             				<Label fx:id="labelTimerName" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="Time:" GridPane.columnIndex="1" GridPane.rowIndex="1">
             					<font>
-            						<Font name="System Bold" size="25.0" />
+            						<Font size="25.0" />
             					</font>
             				</Label>
             				<Label fx:id="labelTimerTime" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="0" GridPane.columnIndex="2" GridPane.rowIndex="1">
             					<font>
-            						<Font name="System Bold" size="25.0" />
+            						<Font size="25.0" />
             					</font>
             				</Label>
             			</children>
@@ -61,7 +60,9 @@
                         
                   	<center>
             		<GridPane fx:id="gameBoard">
-		</GridPane>
+                     <BorderPane.margin>
+                        <Insets top="10.0" />
+                     </BorderPane.margin></GridPane>
             	</center>
             
                         </BorderPane>
@@ -81,9 +82,9 @@
                                     <Font name="System Bold" size="20.0" />
                                  </font>
                               </Label>
-                              <Label fx:id="labelLiveScore" text="Top-Scores:">
+                              <Label fx:id="labelLiveScore" text="Live-Scores:">
                                  <font>
-                                    <Font name="System Bold" size="25.0" />
+                                    <Font size="20.0" />
                                  </font>
                               </Label>
                            </children>
@@ -93,7 +94,7 @@
                   <VBox fx:id="vBoxLiveScore" prefHeight="345.0" prefWidth="155.0">
                   
                        <padding>
-               <Insets bottom="0" left="0" right="0" top="10.0" />
+               <Insets bottom="0" left="0" right="0" top="15.0" />
            </padding>
                </VBox>   
                   
@@ -113,6 +114,12 @@
             </VBox>
          </children>
       </HBox>
-      <Pane fx:id="tickerPane" prefHeight="51.0" prefWidth="761.0" />
+      <Pane fx:id="tickerPane" prefHeight="51.0" prefWidth="761.0">
+         <padding>
+            <Insets top="10.0" />
+         </padding>
+         <VBox.margin>
+            <Insets top="5.0" />
+         </VBox.margin></Pane>
    </children>
 </VBox>

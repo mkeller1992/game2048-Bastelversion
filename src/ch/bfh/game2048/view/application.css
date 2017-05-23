@@ -1,5 +1,5 @@
    #yellow_cell .table-row-cell:selected{
-    -fx-background-color: yellow;
+    -fx-background-color: #0096C9;
      -fx-font-weight: bold;
 }
 
@@ -7,4 +7,12 @@
     -fx-max-height: 0;
     -fx-pref-height: 0;
     -fx-min-height: 0;
+}
+
+/* Selected row when table not focused */
+.table-row-cell:filled:focused:selected {
+    -fx-background-color: red;
+    -fx-background-insets: 0, 1, 2;
+    -fx-background: -fx-accent;
+    -fx-text-fill: -fx-selection-bar-text;
 }

@@ -19,8 +19,8 @@ import ch.bfh.game2048.persistence.OnlineScoreHandler;
 public class Highscore {
 
 	private ReentrantLock lock = new ReentrantLock();
-
 	private ScoreComparator comparator;
+	private GameStatistics lastLocalScore;
 
 	@XmlElementWrapper(name = "Highscores")
 	@XmlElement(name = "PlayerScore")
@@ -29,6 +29,16 @@ public class Highscore {
 	public Highscore() {
 		comparator = new ScoreComparator();
 		highscores = new ArrayList<GameStatistics>();
+	}
+	
+	
+	@XmlTransient
+	public GameStatistics getLastLocalScore() {
+		return lastLocalScore;
+	}
+
+	public void setLastLocalScore(GameStatistics lastLocalScore) {
+		this.lastLocalScore = lastLocalScore;
 	}
 
 	public void setHighscores(ArrayList<GameStatistics> highscores) {

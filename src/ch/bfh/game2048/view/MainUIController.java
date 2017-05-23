@@ -1,6 +1,8 @@
 package ch.bfh.game2048.view;
 
 import java.io.FileNotFoundException;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -21,7 +23,11 @@ import ch.bfh.game2048.persistence.Config;
 import ch.bfh.game2048.persistence.OnlineScoreHandler;
 import ch.bfh.game2048.persistence.ScoreHandler;
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -37,6 +43,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -84,12 +92,12 @@ public class MainUIController implements Observer {
 
 	@FXML
 	private Label newScoreArrivedDate;
-	
+
 	@FXML
 	private Label newScoreArrivedPoints;
 
-    @FXML
-    private Pane tickerPane;
+	@FXML
+	private Pane tickerPane;
 
 	private SuperLabel[][] labelList;
 
@@ -103,8 +111,9 @@ public class MainUIController implements Observer {
 	private Highscore highscoreList;
 	private String playerName;
 	private Config conf;
-	
 
+	private Timeline timeline;
+	private long timeOfLastArrivalMilis = 0;
 
 	private int numberOfColumns = 4;
 
@@ -131,16 +140,14 @@ public class MainUIController implements Observer {
 		onlineScoreHandler.addObserver(this);
 		liveHighscorePane.setOnlineScoreHandler(onlineScoreHandler);
 
-	}
+		styleLabels();
 
-	public void writeScores() {
-
-		try {
-			scoreHandler.writeScores(highscoreList, conf.getPropertyAsString("highscoreFileName"));
-		} catch (JAXBException | FileNotFoundException e) {
-			e.printStackTrace();
-		}
 	}
+	
+
+
+
+
 
 	// Setter and Getter Methods:
 
@@ -159,10 +166,30 @@ public class MainUIController implements Observer {
 	public void setSizeOfBoard(int sizeOfBoard) {
 		this.numberOfColumns = sizeOfBoard;
 	}
+	
+	
+	public void switchScene(Scenes nextScene, int rankToHighlight) {
+		
+		switch (nextScene) {
+		case MAINSCENE:
+			Scene scene1 = startButton.getScene();
+			Main.getStage().setScene(scene1);
+			centerStage();
+			break;
+		case HIGHSCORE:
+			HighScorePane highScorePane = new HighScorePane(highscoreList, this, numberOfColumns);
+			highScorePane.highlightRow(rankToHighlight - 1);
 
-	public HighScorePane getHighScorePane() throws FileNotFoundException, JAXBException {
-		return new HighScorePane(highscoreList, numberOfColumns);
-
+			Scene scene2 = new Scene(highScorePane, 770, 550);
+			scene2.getStylesheets().add(startButton.getScene().getStylesheets().get(0));
+			Main.getStage().setScene(scene2);
+			centerStage();
+			break;
+		case SETTINGS:
+			break;
+		default:
+			break;
+		}
 	}
 
 	// Event-Handlers
@@ -173,7 +200,7 @@ public class MainUIController implements Observer {
 		installEventHandler(startButton.getScene());
 
 		GameStatistics stats = new GameStatistics("", numberOfColumns);
-		stats.setPlayerName("ACTIVE PLAYER");
+		stats.setPlayerName("YOUR SCORE");
 		liveHighscorePane.setActiveStats(stats);
 
 		if (timer != null) {
@@ -182,19 +209,18 @@ public class MainUIController implements Observer {
 
 		game = new GameEngine(numberOfColumns, stats);
 		game.addObserver(this);
-		
+
 		liveHighscorePane.setGameEngine(game);
 
 		timer = new Timer();
 		timer.addObserver(this);
 		fromIntToLabel(game.getBoard());
 		labelScoreNumber.setText("0");
+		labelScoreNumber.setTextFill(Color.LIGHTGREY);
 		startButton.setText(conf.getPropertyAsString("restart.button"));
-		labelLiveScore.setText("");
 		pauseResumeButton.setVisible(true);
 		isRunning = true;
 	}
-
 
 	@FXML
 	void pauseResume(ActionEvent event) {
@@ -204,12 +230,12 @@ public class MainUIController implements Observer {
 		if (game.getStats() != null && game.isGameOver() == false) {
 			if (isRunning) {
 				timer.stop();
-				game.getStats().pauseTime();
+				game.timePause();
 				pauseResumeButton.setText(conf.getPropertyAsString("resume.button"));
 				isRunning = false;
 			} else {
 				timer.start();
-				game.getStats().resumeTime();
+				game.timeResume();
 				pauseResumeButton.setText(conf.getPropertyAsString("pause.button"));
 				isRunning = true;
 			}
@@ -218,7 +244,7 @@ public class MainUIController implements Observer {
 
 	@FXML
 	void showHighScore(ActionEvent event) {
-		showHighscoreList(1);
+			switchScene(Scenes.HIGHSCORE, 1);
 	}
 
 	private void installEventHandler(final Scene scene) {
@@ -245,7 +271,8 @@ public class MainUIController implements Observer {
 
 					if (moved) {
 						fromIntToLabel(game.getBoard());
-						labelScoreNumber.setText("" + game.getStats().getFormattedScore() + " Pts");
+						String formattedScore = NumberFormat.getNumberInstance(Locale.getDefault()).format(game.getStats().getScore());
+						labelScoreNumber.setText("" + formattedScore + " Pts");
 						// liveHighscorePane.refreshContent();
 					}
 				}
@@ -281,6 +308,7 @@ public class MainUIController implements Observer {
 	private void initializeBoard() {
 
 		gameBoard.getChildren().clear();
+		gameBoard.setStyle("-fx-background-color: #CCC0B4;");
 
 		int boardWidth = conf.getPropertyAsInt("boardWidth");
 		int boardHeight = conf.getPropertyAsInt("boardHeight");
@@ -304,6 +332,23 @@ public class MainUIController implements Observer {
 				labelList[i][j] = label;
 			}
 		}
+	}
+	
+	
+	private void styleLabels() {
+
+		labelScoreName.setTextFill(Color.LIGHTGREY);
+
+		labelScoreNumber.setTextFill(Color.LIGHTGREY);
+
+		labelTimerTime.setTextFill(Color.LIGHTGREY);
+
+		labelTimerName.setTextFill(Color.LIGHTGREY);
+
+		labelLiveScore.setTextFill(Color.LIGHTGREY);
+		
+		labelTimerTime.setTextFill(Color.LIGHTGREY);
+
 	}
 
 	// moves the stage to the center of the screen --> After change of scene
@@ -331,13 +376,6 @@ public class MainUIController implements Observer {
 
 	}
 
-	private void showHighscoreList(int rankToHighlight) {
-		try {
-			Main.switchScene(Scenes.HIGHSCORE, rankToHighlight);
-		} catch (FileNotFoundException | JAXBException e) {
-			e.printStackTrace();
-		}
-	}
 
 	private void fromIntToLabel(Tile[][] tileArray) {
 
@@ -370,23 +408,43 @@ public class MainUIController implements Observer {
 		fadeTransition.play();
 	}
 
+	public void writeScores(){
+		try {
+		scoreHandler.writeScores(highscoreList, conf.getPropertyAsString("highscoreFileName"));
+	} catch (JAXBException | FileNotFoundException e) {
+		e.printStackTrace();
+	}		
+	}
+	
 	public void update(Observable o, Object arg) {
 
 		if (arg instanceof PushObject) {
 
-			Thread thread = new Thread(() -> {
-				try {
-					PushObject newScore = (PushObject) arg;
-					displayNewIncomingScore(newScore);
-					Thread.sleep(15000);
-				} catch (InterruptedException e) {
+			PushObject newScore = (PushObject) arg;
+
+			new Thread(new Task<Void>() {
+				@Override
+				protected Void call() throws Exception {
+					Thread.sleep(30000);
+					return null;
 				}
-				removeNewIncomingScore();
-				System.out.println("Has ended");
 
-			});
-			thread.start();
+				@Override
+				protected void running() {
+					if (highscoreList.getLastLocalScore()==null || (!highscoreList.getLastLocalScore().equals(newScore.getStatisticsObject()) && System.currentTimeMillis() - timeOfLastArrivalMilis > 41000)) {
+						timeOfLastArrivalMilis = System.currentTimeMillis();
+						displayTickerText(newScore.toText());
+					}
+					displayTopRightText(newScore);
+					labelLiveScore.setText("");
+				}
 
+				@Override
+				protected void succeeded() {
+					removeNewIncomingScore();
+					labelLiveScore.setText("Live-Scores:");
+				}
+			}).start();
 		}
 
 		else if (o instanceof Timer) {
@@ -419,7 +477,6 @@ public class MainUIController implements Observer {
 						if (continuation) {
 							game.setGameContinue(true);
 						} else {
-							game.getStats().stopTime(true);
 							processGameOver(game.getStats());
 						}
 					}
@@ -428,52 +485,78 @@ public class MainUIController implements Observer {
 		}
 	}
 
-	private void displayNewIncomingScore(PushObject newScore) {
+	/**
+	 * Live-Ticker to display just achieved or incoming scores on main-screen
+	 * 
+	 * @param tickerText
+	 *            contains the information about the latest score
+	 */
 
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
+	private void displayTickerText(TextFlow tickerText) {
 
-				String playerName = newScore.getStatisticsObject().getPlayerName();
-				int score = newScore.getStatisticsObject().getScore();
-				String date = newScore.getStatisticsObject().getFormattedDate();
-				newScoreArrivedDate.setText("Latest score committed:" + "\n");
-				newScoreArrivedPoints.setText(playerName+" "+score+" Pts.");
-				System.out.println(newScore.getStatisticsObject().getPlayerName() + " made a new record");
+		if (timeline != null) {
+			timeline.stop();
+			timeline.getKeyFrames().clear();
+			tickerPane.getChildren().clear();
+		}
 
-			}
-		});
+		TextFlow tickerMessage = tickerText;
+		// tickerMessage.setTextOrigin(VPos.TOP);
+		// tickerMessage.setFont(Font.font(24));
+
+		tickerPane.getChildren().add(tickerMessage);
+
+		double sceneWidth = Main.getStage().getScene().getWidth();
+		double msgWidth = tickerMessage.prefWidth(-1);
+
+		KeyValue initKeyValue = new KeyValue(tickerMessage.translateXProperty(), sceneWidth);
+		KeyFrame initFrame = new KeyFrame(Duration.ZERO, initKeyValue);
+
+		KeyValue endKeyValue = new KeyValue(tickerMessage.translateXProperty(), -1.0 * msgWidth);
+		KeyFrame endFrame = new KeyFrame(Duration.seconds(10), endKeyValue);
+
+		timeline = new Timeline(initFrame, endFrame);
+
+		timeline.setCycleCount(4);
+
+		// timeline.setCycleCount(Timeline.INDEFINITE);
+
+		timeline.play();
 
 	}
-	
-	private void removeNewIncomingScore(){
-		
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				newScoreArrivedDate.setText("");
-				newScoreArrivedPoints.setText("");
-			}
-		});
+
+	private void displayTopRightText(PushObject newScore) {
+
+		String playerName = newScore.getStatisticsObject().getPlayerName();
+		int score = newScore.getStatisticsObject().getScore();
+		newScoreArrivedDate.setText("Latest score committed:" + "\n");
+		newScoreArrivedPoints.setText(playerName + " " + score + " Pts.");
+		newScoreArrivedDate.setTextFill(Color.LIGHTGREY);
+		newScoreArrivedPoints.setTextFill(Color.WHITE);
+		System.out.println(newScore.getStatisticsObject().getPlayerName() + " made a new record");
 	}
-	
-	
+
+	private void removeNewIncomingScore() {
+		newScoreArrivedDate.setText("");
+		newScoreArrivedPoints.setText("");
+	}
 
 	private void processGameOver(GameStatistics stats) {
 
 		timer.stop();
 		isRunning = false;
 		pauseResumeButton.setVisible(false);
-		labelLiveScore.setText("Top Scores:");
 		startButton.setText(conf.getPropertyAsString("restart.button"));
 		GameOverDialog dialog = new GameOverDialog(conf.getPropertyAsString("gameOverDialog.title"), stats.getScore());
 		if (dialog.showAndWait().isPresent()) {
 
 			stats.setPlayerName(dialog.getPlayerName());
+			stats.setTimeOfAddingToScoreList(System.currentTimeMillis());
 			highscoreList.addHighscore(stats);
+			highscoreList.setLastLocalScore(stats);
 
 			int rankOnHighscoreList = highscoreList.getRankOfListEntry(highscoreList.getFilteredHighscoreList(numberOfColumns), stats);
-			showHighscoreList(rankOnHighscoreList);
+			switchScene(Scenes.HIGHSCORE, rankOnHighscoreList);
 
 			liveHighscorePane.removeActiveStats();
 			liveHighscorePane.refreshContent();

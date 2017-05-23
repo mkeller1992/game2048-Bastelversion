@@ -13,10 +13,9 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import ch.bfh.game2048.persistence.Config;
 
-@XmlType(propOrder = { "playerName", "score", "highestValue", "amountOfMoves", "startMil" ,"endMil","boardSize", "timeOfAddingToScoreList" })
+@XmlType(propOrder = { "playerName", "score", "highestValue", "amountOfMoves", "startMil", "durationMil", "boardSize", "timeOfAddingToScoreList" })
 public class GameStatistics {
-	
-	
+
 	private String playerName;
 
 	@XmlElement(name = "Points")
@@ -27,19 +26,16 @@ public class GameStatistics {
 	private int highestValue;
 
 	private long startMil;
-	private long endMil;
-	private long pauseTimeMil;
+	private long durationMil;
 	private long TimeOfAddingToScoreList;
 	private int rank;
-	private int boardSize;	
-
+	private int boardSize;
 
 	DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.getDefault());
-	NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
 	String timeFormat = Config.getInstance().getPropertyAsString("timerTimeFormat");
 
 	public GameStatistics() {
-		
+
 	}
 
 	public GameStatistics(String playerName, int boardSize) {
@@ -48,35 +44,28 @@ public class GameStatistics {
 		this.score = 0;
 		this.amountOfMoves = 0;
 		this.highestValue = 0;
-		this.startMil = System.currentTimeMillis();
-		this.endMil = 0;
-		this.pauseTimeMil = 0;
-		this.boardSize = boardSize;			
+		this.startMil = 0;
+		this.durationMil = 0;
+		this.boardSize = boardSize;
 	}
 
-	
-	
-	private void setRankAsString(String rankAsString){		
+	private void setRankAsString(String rankAsString) {
 	}
-	
-	private void setFormattedScore(String formattedScore) {
+
+	private void setFormattedDuration(String formattedDuration) {
 	}
-	
-	private void setFormattedDuration(String formattedDuration){			
+
+	private void setFormattedDate(String formattedDate) {
 	}
-	
-	private void setFormattedDate(String formattedDate){		
-	}
-	
-	public void setPlayerName(String playerName){
+
+	public void setPlayerName(String playerName) {
 		this.playerName = playerName;
 	}
-	
+
 	@XmlElement(name = "Nickname")
-	public String getPlayerName(){
+	public String getPlayerName() {
 		return playerName;
 	}
-
 
 	@XmlTransient
 	public int getRank() {
@@ -92,15 +81,11 @@ public class GameStatistics {
 	}
 
 	public void addScore(int score) {
-		this.score += score;	
-	}
-	
-	public int getScore() {
-		return score;
+		this.score += score;
 	}
 
-	public String getFormattedScore() {
-		return numberFormat.format(score);
+	public int getScore() {
+		return score;
 	}
 
 	public int getAmountOfMoves() {
@@ -133,17 +118,17 @@ public class GameStatistics {
 		this.startMil = startMil;
 	}
 
-	@XmlElement(name = "EndMillis")
-	public long getEndMil() {
-		return endMil;
+	@XmlElement(name = "durationMil")
+	public long getDurationMil() {
+		return durationMil;
 	}
 
-	public void setEndMil(long endMil) {
-		this.endMil = endMil;
+	public void setDurationMil(long durationMil) {
+		this.durationMil = durationMil;
 	}
-	
+
 	public String getFormattedDuration() {
-		return DurationFormatUtils.formatDuration(getEndMil()-getStartMil(), timeFormat);
+		return DurationFormatUtils.formatDuration(getDurationMil(), timeFormat);
 	}
 
 	@XmlElement(name = "BoardSize")
@@ -155,21 +140,6 @@ public class GameStatistics {
 		this.boardSize = boardSize;
 	}
 
-	public void stopTime(boolean gameOver) {
-		setEndMil(System.currentTimeMillis()-pauseTimeMil);
-		setTimeOfAddingToScoreList(System.currentTimeMillis());
-
-	}
-	
-	public void pauseTime(){
-		setEndMil(System.currentTimeMillis());
-	}
-
-	public void resumeTime(){
-		this.pauseTimeMil += System.currentTimeMillis()-endMil;
-		
-	}
-
 	public long getTimeOfAddingToScoreList() {
 		return TimeOfAddingToScoreList;
 	}
@@ -177,5 +147,34 @@ public class GameStatistics {
 	public void setTimeOfAddingToScoreList(long timeOfAddingToScoreList) {
 		TimeOfAddingToScoreList = timeOfAddingToScoreList;
 	}
-	
+
+	/**
+	 * To check this Game-Statistics equals another GameStatistics-object
+	 * 
+	 * @param gameStats
+	 * @return true if the two Game-Statistics objects are equal
+	 */
+
+	public boolean equals(GameStatistics gameStats) {
+
+		if (this.getPlayerName() != gameStats.getPlayerName()) {
+			return false;
+		}
+		if (this.getScore() != gameStats.getScore()) {
+			return false;
+		}
+		if (this.getHighestValue() != gameStats.getHighestValue()) {
+			return false;
+		}
+		if (this.getAmountOfMoves() != gameStats.getAmountOfMoves()) {
+			return false;
+		}
+		if (this.getTimeOfAddingToScoreList() != gameStats.getTimeOfAddingToScoreList()) {
+			return false;
+		}
+		if (this.getStartMil() != gameStats.getStartMil()) {
+			return false;
+		}
+		return true;
+	}
 }

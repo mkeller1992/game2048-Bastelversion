@@ -2,6 +2,8 @@ package ch.bfh.game2048.engine;
 
 import java.util.Observable;
 
+import org.apache.commons.lang3.time.StopWatch;
+
 import ch.bfh.game2048.model.Direction;
 import ch.bfh.game2048.model.GameStatistics;
 import ch.bfh.game2048.model.Tile;
@@ -11,6 +13,7 @@ public class GameEngine extends Observable {
 	int boardSize;
 	Tile[][] board;
 	GameStatistics stats;
+	StopWatch stopWatch;
 
 	private boolean gameOver = false;
 	private boolean gameContinue = false;
@@ -45,10 +48,25 @@ public class GameEngine extends Observable {
 		board = new Tile[boardSize][boardSize];
 
 		initGameBoard();
+		stopWatch = new StopWatch();
+		stopWatch.start();
+		stats.setStartMil(System.currentTimeMillis());
+		
 
 		spawnRandomTile();
 		spawnRandomTile();
-
+	}
+	
+	public void gameReset(){	
+		stopWatch.reset();
+	}
+	
+	public void timePause(){
+		stopWatch.suspend();
+	}
+	
+	public void timeResume(){
+		stopWatch.resume();
 	}
 
 	public boolean isGameOver() {
@@ -56,7 +74,10 @@ public class GameEngine extends Observable {
 	}
 
 	public void setGameOver(boolean gameOver) {
+		stopWatch.stop();
+		stats.setDurationMil(stopWatch.getTime());
 		this.gameOver = gameOver;
+		 
 	}
 
 	public boolean isGameContinue() {

@@ -14,8 +14,8 @@ public class ScoreComparator implements Comparator<GameStatistics> {
 		int highestTile1 = p1.getHighestValue();
 		int highestTile2 = p2.getHighestValue();
 		
-		long duration1 = p1.getEndMil()-p1.getStartMil();
-		long duration2 = p2.getEndMil()-p2.getStartMil();
+		long duration1 = p1.getDurationMil();
+		long duration2 = p2.getDurationMil();
 		
 		int numbOfMoves1 = p1.getAmountOfMoves();
 		int numbOfMoves2 = p2.getAmountOfMoves();
