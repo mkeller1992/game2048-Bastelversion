@@ -18,7 +18,8 @@ import ch.bfh.game2048.model.Highscore;
 
 public class ScoreHandler {
 
-	final static String APPDATA_PATH = System.getenv("APPDATA") + "/";
+	final static String DIRECTORY_NAME = "Game2048";
+	final static String APPDATA_PATH = System.getenv("APPDATA") + "/"+DIRECTORY_NAME+"/";
 
 	public void writeScores(Highscore highscores, String xmlName) throws JAXBException, FileNotFoundException {
 
@@ -65,6 +66,13 @@ public class ScoreHandler {
 	
 	private void createDBIfNotExist(String fullPath) {
 
+	    File directory = new File(APPDATA_PATH);
+	    if (! directory.exists()){
+	        directory.mkdir();
+	        // If you require it to make the entire directory path including parents,
+	        // use directory.mkdirs(); here instead.
+	    }
+		
 		Path path = Paths.get(fullPath);
 
 		if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {

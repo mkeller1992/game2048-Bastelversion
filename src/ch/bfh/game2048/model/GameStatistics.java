@@ -1,25 +1,25 @@
 package ch.bfh.game2048.model;
 
 import java.text.DateFormat;
-import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.Observable;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import ch.bfh.game2048.persistence.Config;
+import ch.bfh.game2048.persistence.EncryptedStringXmlAdapter;
 
-@XmlType(propOrder = { "playerName", "score", "highestValue", "amountOfMoves", "startMil", "durationMil", "boardSize", "timeOfAddingToScoreList" })
+@XmlType(propOrder = { "playerName", "scoreAsString", "highestValue", "amountOfMoves", "startMil", "durationMil", "boardSize", "timeOfAddingToScoreList" })
 public class GameStatistics {
 
 	private String playerName;
 
-	@XmlElement(name = "Points")
 	private int score;
+	private String scoreAsString;
 
 	@XmlElement(name = "NumberOfMoves")
 	private int amountOfMoves;
@@ -42,11 +42,22 @@ public class GameStatistics {
 
 		this.playerName = playerName;
 		this.score = 0;
+		scoreAsString ="0";
 		this.amountOfMoves = 0;
 		this.highestValue = 0;
 		this.startMil = 0;
 		this.durationMil = 0;
 		this.boardSize = boardSize;
+	}
+	
+	@XmlJavaTypeAdapter(value = EncryptedStringXmlAdapter.class)
+	@XmlElement(name = "Points")
+	public String getScoreAsString() {
+		return scoreAsString;
+	}
+
+	public void setScoreAsString(String scoreAsString) {
+		this.scoreAsString = scoreAsString;
 	}
 
 	private void setRankAsString(String rankAsString) {
@@ -62,6 +73,7 @@ public class GameStatistics {
 		this.playerName = playerName;
 	}
 
+	@XmlJavaTypeAdapter(value = EncryptedStringXmlAdapter.class)
 	@XmlElement(name = "Nickname")
 	public String getPlayerName() {
 		return playerName;
@@ -84,6 +96,7 @@ public class GameStatistics {
 		this.score += score;
 	}
 
+	@XmlTransient
 	public int getScore() {
 		return score;
 	}

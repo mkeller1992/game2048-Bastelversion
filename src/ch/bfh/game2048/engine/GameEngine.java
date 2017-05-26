@@ -68,7 +68,6 @@ public class GameEngine extends Observable {
 
 		stats.setStartMil(System.currentTimeMillis());
 		stopWatch.start();
-		System.out.println("Stopwatch started ***************");
 		stopWatchSuspended = false;
 		gameHasBeenStarted=true;
 		activeAndRunning=true;
@@ -89,7 +88,6 @@ public class GameEngine extends Observable {
 	public void timePause() {
 		if (!stopWatchSuspended) {
 			stopWatch.suspend();
-			System.out.println("suspend******************");
 			stopWatchSuspended=true;
 		}
 		activeAndRunning=false;
@@ -98,7 +96,6 @@ public class GameEngine extends Observable {
 	public void timeResume() {
 		if (stopWatchSuspended){
 		stopWatch.resume();
-		System.out.println("resume******************");
 		stopWatchSuspended=false;
 		}
 		activeAndRunning=true;
@@ -110,8 +107,8 @@ public class GameEngine extends Observable {
 
 	public void setGameOver(boolean gameOver) {
 		stopWatch.stop();
-		System.out.println("stop******************");
 		stats.setDurationMil(stopWatch.getTime());
+		stats.setScoreAsString(""+stats.getScore());
 		this.gameOver = gameOver;
 		resetGame();
 	}
