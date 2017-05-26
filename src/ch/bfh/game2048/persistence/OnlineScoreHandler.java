@@ -1,8 +1,8 @@
 package ch.bfh.game2048.persistence;
 
-import java.io.File;
-import java.io.FileInputStream;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,18 +27,16 @@ public class OnlineScoreHandler extends Observable {
 	private Highscore highscore;
 	private DatabaseReference scoreRef;
 	ScoreHandler scoreHandler;
-	private Config conf;
+
+	
+	final static String APPDATA_PATH = System.getenv("APPDATA") + "/";
 
 	public OnlineScoreHandler() {
 
-		conf = Config.getInstance();
-
 		// Fetch the service account key JSON file contents
-		FileInputStream serviceAccount;
 		try {
-			File file = new File("src/ch/bfh/game2048/persistence/credentials.json");
-			System.out.println(file.getAbsolutePath());
-			serviceAccount = new FileInputStream(file);
+			
+			InputStream serviceAccount = this.getClass().getResourceAsStream("credentials.json");
 
 			// Initialize the app with a custom auth variable, limiting the server's access
 			Map<String, Object> auth = new HashMap<String, Object>();
@@ -52,12 +50,6 @@ public class OnlineScoreHandler extends Observable {
 
 			scoreRef = ref.child("scores");
 
-			// GameStatistics gameStats = new GameStatistics("Matthias Keller", 8);
-			// gameStats.setBoardSize(20);
-			// scoreRef.push().setValue(gameStats);
-
-			System.out.println("Done");
-
 			scoreRef.addValueEventListener(new ValueEventListener() {
 				public void onDataChange(DataSnapshot snapshot) {
 
@@ -69,7 +61,6 @@ public class OnlineScoreHandler extends Observable {
 					}
 
 					highscore.setHighscores(tempScoreArray);
-
 
 					setChanged();
 					notifyObservers();

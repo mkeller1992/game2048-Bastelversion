@@ -39,7 +39,7 @@ public class Main extends Application {
 			this.controller = (MainUIController) loader.getController();
 			this.mainScene = new Scene(root, 760, 580);
 			this.stage = primaryStage;
-			stage.setTitle("2048 by M&M");
+			stage.setTitle("2048 by Matthias K.");
 			stage.getIcons().add(new Image(getClass().getResourceAsStream("meteor.png")));
 			mainScene.getStylesheets().add(getClass().getResource("view/application.css").toExternalForm());
 			primaryStage.setScene(mainScene);
