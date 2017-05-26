@@ -5,28 +5,33 @@ import java.util.Observable;
 public class Timer extends Observable implements Runnable {
 
 	long millisElapsed;
-	Thread timerThread; 
+	Thread timerThread;
 
 	long lastMillis;
-	
+
 	public Timer() {
 
 		this.millisElapsed = 0;
 		lastMillis = System.currentTimeMillis();
-		start();
 	}
 
-	public void start(){
+	public void start() {
 		lastMillis = System.currentTimeMillis();
 		timerThread = new Thread(this);
 		timerThread.setDaemon(true);
 		timerThread.start();
 	}
-		
+
+	public void reset() {
+		stop();
+		millisElapsed = 0;
+		this.setChanged();
+		this.notifyObservers();
+	}
+
 	public long getMillisElapsed() {
 		return millisElapsed;
 	}
-
 
 	@Override
 	public void run() {
@@ -40,17 +45,19 @@ public class Timer extends Observable implements Runnable {
 			}
 		}
 	}
-	
-	private void increaseMillis(){
+
+	private void increaseMillis() {
 		long diff = System.currentTimeMillis() - lastMillis;
-		millisElapsed+= diff;
+		millisElapsed += diff;
 		lastMillis = System.currentTimeMillis();
 		this.setChanged();
-		this.notifyObservers();		
+		this.notifyObservers();
 	}
-	
-	public void stop(){
-		timerThread.interrupt();
-		
+
+	public void stop() {
+		if (timerThread != null) {
+			timerThread.interrupt();
+		}
+
 	}
 }

@@ -30,7 +30,7 @@ public class GameOverDialog extends Dialog<String> implements InvalidationListen
 		this.setHeaderText(MessageFormat.format(conf.getPropertyAsString("gameOverText1.dialog"), new Object[] {finalScore}));
 		
 		Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
-		stage.getIcons().add(new Image(getClass().getResourceAsStream("../meteor.png")));
+		stage.getIcons().add(new Image(getClass().getResourceAsStream("images/meteor.png")));
 		
 		Image image = new Image(getClass().getResource("images/LosingSmiley.png").toExternalForm());
 		ImageView imageView = new ImageView(image);

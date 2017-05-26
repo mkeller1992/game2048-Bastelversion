@@ -17,56 +17,91 @@ public class GameEngine extends Observable {
 
 	private boolean gameOver = false;
 	private boolean gameContinue = false;
-
-	/**
-	 * Constructor 1 of the GameEngine, Initializes the board of a given size
-	 * with empty Tiles, yet without any spawned numbers
-	 * 
-	 * @param boardSize
-	 *            size of the board
-	 */
+	private boolean stopWatchSuspended = false;
+	
+	private boolean gameHasBeenStarted = false;
+	private boolean activeAndRunning = false;
 
 	public GameEngine(int boardSize) {
 		this.boardSize = boardSize;
-		board = new Tile[boardSize][boardSize];
 		initGameBoard();
+		
+		stopWatch = new StopWatch();		
 	}
-
-	/**
-	 * Constructor 2 of the GameEngine, Initializes the board with the given size and spawns random tiles.
-	 * All the statistics are recorded in the given GameStatistics-Object.
-	 * 
-	 * @param boardSize
-	 *            size of the board
-	 * @param stats
-	 *            object to store the game statistics
-	 */
-	public GameEngine(int boardSize, GameStatistics stats) {
-		this.boardSize = boardSize;
-		this.stats = stats;
-
-		board = new Tile[boardSize][boardSize];
-
-		initGameBoard();
-		stopWatch = new StopWatch();
-		stopWatch.start();
-		stats.setStartMil(System.currentTimeMillis());
 		
 
-		spawnRandomTile();
-		spawnRandomTile();
+	public int getBoardSize() {
+		return boardSize;
 	}
 	
-	public void gameReset(){	
+	
+	public boolean isGameHasBeenStarted() {
+		return gameHasBeenStarted;
+	}
+
+
+	public void setGameHasBeenStarted(boolean gameHasBeenStarted) {
+		this.gameHasBeenStarted = gameHasBeenStarted;
+	}
+
+
+	public boolean isActiveAndRunning() {
+		return activeAndRunning;
+	}
+
+
+	public void setActiveAndRunning(boolean activeAndRunning) {
+		this.activeAndRunning = activeAndRunning;
+	}
+
+
+	public void setBoardSize(int boardSize) {
+		this.boardSize = boardSize;
+		initGameBoard();
+	}
+
+	public void setGameStats(GameStatistics stats) {
+		this.stats = stats;
+	}
+
+	public void startGame() {
+
+		stats.setStartMil(System.currentTimeMillis());
+		stopWatch.start();
+		System.out.println("Stopwatch started ***************");
+		stopWatchSuspended = false;
+		gameHasBeenStarted=true;
+		activeAndRunning=true;
+		initGameBoard();
+		spawnRandomTile();
+		spawnRandomTile();
+		setChanged();
+		notifyObservers("wasMerged");
+	}
+
+	public void resetGame() {
 		stopWatch.reset();
+		stopWatchSuspended = true;
+		gameHasBeenStarted=false;
+		activeAndRunning=false;
 	}
-	
-	public void timePause(){
-		stopWatch.suspend();
+
+	public void timePause() {
+		if (!stopWatchSuspended) {
+			stopWatch.suspend();
+			System.out.println("suspend******************");
+			stopWatchSuspended=true;
+		}
+		activeAndRunning=false;
 	}
-	
-	public void timeResume(){
+
+	public void timeResume() {
+		if (stopWatchSuspended){
 		stopWatch.resume();
+		System.out.println("resume******************");
+		stopWatchSuspended=false;
+		}
+		activeAndRunning=true;
 	}
 
 	public boolean isGameOver() {
@@ -75,9 +110,10 @@ public class GameEngine extends Observable {
 
 	public void setGameOver(boolean gameOver) {
 		stopWatch.stop();
+		System.out.println("stop******************");
 		stats.setDurationMil(stopWatch.getTime());
 		this.gameOver = gameOver;
-		 
+		resetGame();
 	}
 
 	public boolean isGameContinue() {
@@ -92,7 +128,9 @@ public class GameEngine extends Observable {
 	 * Initializes the gameBoard with new (empty) Tile-Objects
 	 */
 	private void initGameBoard() {
-
+		
+		board = new Tile[boardSize][boardSize];
+		
 		for (int i = 0; i < boardSize; i++) {
 			for (int j = 0; j < boardSize; j++) {
 				board[i][j] = new Tile();
@@ -106,7 +144,7 @@ public class GameEngine extends Observable {
 		while (!done) {
 			int row = (int) (Math.random() * (boardSize));
 			int col = (int) (Math.random() * (boardSize));
-
+			
 			if (board[row][col].getValue() == 0) {
 				board[row][col].setValue(getRandomValue());
 				board[row][col].setSpawned(true);
@@ -257,12 +295,13 @@ public class GameEngine extends Observable {
 				if (mergedValue > 0) {
 					setChanged();
 					notifyObservers("wasMerged");
+					System.out.println(stopWatch.getTime());
 				}
-				
-				if(isGameContinue()==false && mergedValue == Config.getInstance().getPropertyAsInt("winningNumber")){
+
+				if (isGameContinue() == false && mergedValue == Config.getInstance().getPropertyAsInt("winningNumber")) {
 					setChanged();
 					notifyObservers("gameWon");
-				}				
+				}
 
 				if (mergedValue > stats.getHighestValue()) {
 					stats.setHighestValue(mergedValue);

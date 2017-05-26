@@ -116,39 +116,40 @@ public class MainUIController implements Observer {
 	private Timeline timeline;
 	private long timeOfLastArrivalMilis = 0;
 
-	private int numberOfColumns = 4;
-
-	private boolean isRunning = false;
-
 	@FXML
 	public void initialize() throws FileNotFoundException, JAXBException {
 
 		conf = Config.getInstance();
 		scoreHandler = new ScoreHandler();
-		game = new GameEngine(numberOfColumns);
 
+		game = new GameEngine(4);
+		game.addObserver(this);
+
+		timer = new Timer();
+		timer.addObserver(this);
+
+		
 		highscoreList = scoreHandler.readScores(conf.getPropertyAsString("highscoreFileName"));
 
 		// setSizeOfBoard(4);
 		initializeBoard();
 
-		initializeLiveScorePane();
 		pauseResumeButton.setVisible(false);
 		initializeBoardSizeComboBox();
 
 		onlineScoreHandler = new OnlineScoreHandler();
 		onlineScoreHandler.setHighscore(highscoreList);
 		onlineScoreHandler.addObserver(this);
-		liveHighscorePane.setOnlineScoreHandler(onlineScoreHandler);
 
+		// Initialization / addition of live highscore-pane
+
+		liveHighscorePane = new LiveHighScoreView(game, onlineScoreHandler, highscoreList);
+		vBoxLiveScore.getChildren().add(liveHighscorePane);
+		
+		labelTimerTime.setText("00:00:00");
 		styleLabels();
 
 	}
-	
-
-
-
-
 
 	// Setter and Getter Methods:
 
@@ -160,42 +161,37 @@ public class MainUIController implements Observer {
 		this.playerName = playerName;
 	}
 
-	public int getSizeOfBoard() {
-		return numberOfColumns;
-	}
-
-	public void setSizeOfBoard(int sizeOfBoard) {
-		this.numberOfColumns = sizeOfBoard;
-	}
-	
-	
 	public void switchScene(Scenes nextScene, int rankToHighlight) {
-		
+
 		switch (nextScene) {
+
 		case MAINSCENE:
 			Scene scene1 = startButton.getScene();
 			Main.getStage().setScene(scene1);
-			centerStage();
+
 			break;
 		case HIGHSCORE:
-			
-//			Paginatior pagenat = new Paginatior(highscoreList,this,getSizeOfBoard());
-//			centerStage();
-			
-			
-			HighScorePane highScorePane = new HighScorePane(highscoreList, this, numberOfColumns);
+
+			if (game.isGameHasBeenStarted()) {
+				timer.stop();
+				game.timePause();
+				pauseResumeButton.setText(conf.getPropertyAsString("resume.button"));
+			}
+
+			HighScorePane highScorePane = new HighScorePane(highscoreList, this, game.getBoardSize());
 			highScorePane.highlightRow(rankToHighlight - 1);
 
 			Scene scene2 = new Scene(highScorePane, 770, 550);
 			scene2.getStylesheets().add(startButton.getScene().getStylesheets().get(0));
 			Main.getStage().setScene(scene2);
-			centerStage();
 			break;
 		case SETTINGS:
 			break;
 		default:
 			break;
 		}
+
+		centerStage();
 	}
 
 	// Event-Handlers
@@ -205,27 +201,22 @@ public class MainUIController implements Observer {
 
 		installEventHandler(startButton.getScene());
 
-		GameStatistics stats = new GameStatistics("", numberOfColumns);
-		stats.setPlayerName("YOUR SCORE");
+		GameStatistics stats = new GameStatistics("YOUR SCORE", game.getBoardSize());
+		game.setGameStats(stats);
+		game.resetGame();
+		game.startGame();
+
 		liveHighscorePane.setActiveStats(stats);
 
-		if (timer != null) {
-			timer.stop();
-		}
+		timer.reset();
+		timer.start();
 
-		game = new GameEngine(numberOfColumns, stats);
-		game.addObserver(this);
+		mapTilesOnLabels(game.getBoard());
+//		labelScoreNumber.setText("0");
 
-		liveHighscorePane.setGameEngine(game);
-
-		timer = new Timer();
-		timer.addObserver(this);
-		fromIntToLabel(game.getBoard());
-		labelScoreNumber.setText("0");
-		labelScoreNumber.setTextFill(Color.LIGHTGREY);
 		startButton.setText(conf.getPropertyAsString("restart.button"));
+		pauseResumeButton.setText("Pause");
 		pauseResumeButton.setVisible(true);
-		isRunning = true;
 	}
 
 	@FXML
@@ -233,24 +224,24 @@ public class MainUIController implements Observer {
 
 		// If a game is currently ongoing or paused --> Switch between pause and
 		// resume
-		if (game.getStats() != null && game.isGameOver() == false) {
-			if (isRunning) {
+		if (game.isGameHasBeenStarted()) {
+			if (game.isActiveAndRunning()) {
 				timer.stop();
+				System.out.println("Timer stop");
 				game.timePause();
 				pauseResumeButton.setText(conf.getPropertyAsString("resume.button"));
-				isRunning = false;
 			} else {
 				timer.start();
+				System.out.println("Timer start");
 				game.timeResume();
 				pauseResumeButton.setText(conf.getPropertyAsString("pause.button"));
-				isRunning = true;
 			}
 		}
 	}
 
 	@FXML
 	void showHighScore(ActionEvent event) {
-			switchScene(Scenes.HIGHSCORE, 1);
+		switchScene(Scenes.HIGHSCORE, 1);
 	}
 
 	private void installEventHandler(final Scene scene) {
@@ -259,7 +250,7 @@ public class MainUIController implements Observer {
 		final EventHandler<KeyEvent> keyEventHandler = new EventHandler<KeyEvent>() {
 			public void handle(final KeyEvent keyEvent) {
 
-				if (isRunning) {
+				if (game.isActiveAndRunning()) {
 					System.out.println(keyEvent.getCode());
 					boolean moved = false;
 					if (keyEvent.getCode() == KeyCode.UP) {
@@ -276,7 +267,7 @@ public class MainUIController implements Observer {
 					}
 
 					if (moved) {
-						fromIntToLabel(game.getBoard());
+						mapTilesOnLabels(game.getBoard());
 						String formattedScore = NumberFormat.getNumberInstance(Locale.getDefault()).format(game.getStats().getScore());
 						labelScoreNumber.setText("" + formattedScore + " Pts");
 						// liveHighscorePane.refreshContent();
@@ -288,13 +279,6 @@ public class MainUIController implements Observer {
 		scene.setOnKeyPressed(keyEventHandler);
 	}
 
-	// Initialization of GUI elements:
-
-	private void initializeLiveScorePane() {
-		liveHighscorePane = new LiveHighScoreView(highscoreList, numberOfColumns);
-		vBoxLiveScore.getChildren().add(liveHighscorePane);
-	}
-
 	@SuppressWarnings("unchecked")
 	public void initializeBoardSizeComboBox() {
 
@@ -302,13 +286,15 @@ public class MainUIController implements Observer {
 
 		boardSizeComboBox.getItems().setAll(BoardSizes.values());
 
-		BoardSizes elementToBeSelected = BoardSizes.findStateByBoardSize(numberOfColumns);
+		BoardSizes elementToBeSelected = BoardSizes.findStateByBoardSize(game.getBoardSize());
 		boardSizeComboBox.getSelectionModel().select(elementToBeSelected);
 
 		boardSizeComboBox.setOnAction((event) -> {
 			BoardSizes selectedEntry = (BoardSizes) boardSizeComboBox.getSelectionModel().getSelectedItem();
 			switchBoardSize(selectedEntry.getBoardSize());
+			gameBoard.requestFocus();
 		});
+		boardSizeComboBox.setFocusTraversable(false);
 	}
 
 	private void initializeBoard() {
@@ -322,6 +308,8 @@ public class MainUIController implements Observer {
 		gameBoard.setPrefSize(boardWidth, boardHeight);
 		gameBoard.setMinSize(boardWidth, boardHeight);
 		gameBoard.setMaxSize(boardWidth, boardHeight);
+
+		int numberOfColumns = game.getBoardSize();
 
 		labelList = new SuperLabel[numberOfColumns][numberOfColumns];
 		double labelSize = (boardWidth * 1.0) / numberOfColumns;
@@ -339,8 +327,7 @@ public class MainUIController implements Observer {
 			}
 		}
 	}
-	
-	
+
 	private void styleLabels() {
 
 		labelScoreName.setTextFill(Color.LIGHTGREY);
@@ -352,13 +339,15 @@ public class MainUIController implements Observer {
 		labelTimerName.setTextFill(Color.LIGHTGREY);
 
 		labelLiveScore.setTextFill(Color.LIGHTGREY);
-		
+
 		labelTimerTime.setTextFill(Color.LIGHTGREY);
+		
+		labelScoreNumber.setTextFill(Color.LIGHTGREY);
 
 	}
 
 	// moves the stage to the center of the screen --> After change of scene
-	public void centerStage() {
+	private void centerStage() {
 		Stage stage = Main.getStage();
 		Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
 		stage.setX((screenBounds.getWidth() - stage.getWidth()) / 2);
@@ -366,25 +355,28 @@ public class MainUIController implements Observer {
 
 	}
 
-	private void switchBoardSize(int newBoardSize) {
+	private void switchBoardSize(int boardSize) {
 
-		if (timer != null) {
-			timer.stop();
-		}
-		isRunning = false;
-		setSizeOfBoard(newBoardSize);
-		game = new GameEngine(numberOfColumns);
+		timer.reset();
+
+		labelScoreNumber.setText("");
+		pauseResumeButton.setText("Pause");
+		game.resetGame();
+		game.setBoardSize(boardSize);
 		initializeBoard();
-		liveHighscorePane.getChildren().clear();
-		initializeLiveScorePane();
+
+		liveHighscorePane.removeActiveStats();
+		liveHighscorePane.refreshContent();
+
 		pauseResumeButton.setVisible(false);
 		startButton.setText(conf.getPropertyAsString("start.button"));
 
 	}
 
+	private void mapTilesOnLabels(Tile[][] tileArray) {
 
-	private void fromIntToLabel(Tile[][] tileArray) {
-
+		System.out.println(tileArray.length);
+		
 		int i = 0;
 		int j = 0;
 		for (SuperLabel[] row : labelList) {
@@ -414,14 +406,14 @@ public class MainUIController implements Observer {
 		fadeTransition.play();
 	}
 
-	public void writeScores(){
+	public void writeScores() {
 		try {
-		scoreHandler.writeScores(highscoreList, conf.getPropertyAsString("highscoreFileName"));
-	} catch (JAXBException | FileNotFoundException e) {
-		e.printStackTrace();
-	}		
+			scoreHandler.writeScores(highscoreList, conf.getPropertyAsString("highscoreFileName"));
+		} catch (JAXBException | FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	public void update(Observable o, Object arg) {
 
 		if (arg instanceof PushObject) {
@@ -437,7 +429,7 @@ public class MainUIController implements Observer {
 
 				@Override
 				protected void running() {
-					if (highscoreList.getLastLocalScore()==null || (!highscoreList.getLastLocalScore().equals(newScore.getStatisticsObject()) && System.currentTimeMillis() - timeOfLastArrivalMilis > 41000)) {
+					if (highscoreList.getLastLocalScore() == null || (!highscoreList.getLastLocalScore().equals(newScore.getStatisticsObject()) && System.currentTimeMillis() - timeOfLastArrivalMilis > 41000)) {
 						timeOfLastArrivalMilis = System.currentTimeMillis();
 						displayTickerText(newScore.toText());
 					}
@@ -477,12 +469,12 @@ public class MainUIController implements Observer {
 					}
 
 					else if (pushObject.equals("gameWon")) {
-
 						VictoryAlert dialog = new VictoryAlert(conf.getPropertyAsString("victoryTitle.alert"), conf.getPropertyAsString("victoryText.alert"));
 						boolean continuation = dialog.show();
 						if (continuation) {
 							game.setGameContinue(true);
 						} else {
+							game.setGameOver(true);
 							processGameOver(game.getStats());
 						}
 					}
@@ -548,11 +540,11 @@ public class MainUIController implements Observer {
 	}
 
 	private void processGameOver(GameStatistics stats) {
-
+		
 		timer.stop();
-		isRunning = false;
 		pauseResumeButton.setVisible(false);
 		startButton.setText(conf.getPropertyAsString("restart.button"));
+		
 		GameOverDialog dialog = new GameOverDialog(conf.getPropertyAsString("gameOverDialog.title"), stats.getScore());
 		if (dialog.showAndWait().isPresent()) {
 
@@ -561,7 +553,7 @@ public class MainUIController implements Observer {
 			highscoreList.addHighscore(stats);
 			highscoreList.setLastLocalScore(stats);
 
-			int rankOnHighscoreList = highscoreList.getRankOfListEntry(highscoreList.getFilteredHighscoreList(numberOfColumns), stats);
+			int rankOnHighscoreList = highscoreList.getRankOfListEntry(highscoreList.getFilteredHighscoreList(game.getBoardSize()), stats);
 			switchScene(Scenes.HIGHSCORE, rankOnHighscoreList);
 
 			liveHighscorePane.removeActiveStats();

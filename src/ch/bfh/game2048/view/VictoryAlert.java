@@ -30,7 +30,7 @@ public class VictoryAlert {
 		alert.setHeaderText(text);
 		
 		Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-		stage.getIcons().add(new Image(getClass().getResourceAsStream("../meteor.png")));
+		stage.getIcons().add(new Image(getClass().getResourceAsStream("images/meteor.png")));
 		
 		Image image = new Image(getClass().getResource("images/WinningSmiley.png").toExternalForm());
 		ImageView imageView = new ImageView(image);

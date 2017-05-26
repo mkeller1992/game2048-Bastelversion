@@ -10,7 +10,8 @@ public class EngineTest extends TestCase {
 	GameEngine game;
 	
 	private void init(int boardSize){		
-		game = new GameEngine(boardSize, new GameStatistics("",boardSize));
+		game = new GameEngine(boardSize);
+		game.setGameStats(new GameStatistics("",boardSize));
 		board = new Tile[boardSize][boardSize];
 		
 		

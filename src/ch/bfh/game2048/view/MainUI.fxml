@@ -38,7 +38,7 @@
             						<Font name="System Bold" size="25.0" />
             					</font>
             				</Label>
-            				<Label fx:id="labelScoreNumber" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="0" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            				<Label fx:id="labelScoreNumber" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
             					<font>
             						<Font name="System Bold" size="25.0" />
             					</font>
@@ -48,7 +48,7 @@
             						<Font size="25.0" />
             					</font>
             				</Label>
-            				<Label fx:id="labelTimerTime" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+            				<Label fx:id="labelTimerTime" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
             					<font>
             						<Font size="25.0" />
             					</font>

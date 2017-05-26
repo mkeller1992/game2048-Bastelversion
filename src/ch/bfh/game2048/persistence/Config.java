@@ -13,7 +13,7 @@ import javafx.collections.ObservableList;
 
 public class Config {
 
-	public final static String PROPERTIES_FILE_NAME = "2048.properties";
+	public final static String PROPERTIES_FILE_NAME = "src/ch/bfh/game2048/persistence/2048.properties";
 	FileBasedConfigurationBuilder<FileBasedConfiguration> builder;
 	Configuration conf;
 	

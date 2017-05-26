@@ -1,5 +1,6 @@
 package ch.bfh.game2048.persistence;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,7 +36,9 @@ public class OnlineScoreHandler extends Observable {
 		// Fetch the service account key JSON file contents
 		FileInputStream serviceAccount;
 		try {
-			serviceAccount = new FileInputStream("credentials2.json");
+			File file = new File("src/ch/bfh/game2048/persistence/credentials.json");
+			System.out.println(file.getAbsolutePath());
+			serviceAccount = new FileInputStream(file);
 
 			// Initialize the app with a custom auth variable, limiting the server's access
 			Map<String, Object> auth = new HashMap<String, Object>();
@@ -64,10 +67,6 @@ public class OnlineScoreHandler extends Observable {
 						GameStatistics score = postSnapshot.getValue(GameStatistics.class);
 						tempScoreArray.add(score);
 					}
-					// System.out.println("Print ArrayList:");
-					// for (GameStatistics s : tempScoreArray) {
-					// System.out.println(s.getBoardSize());
-					// }
 
 					highscore.setHighscores(tempScoreArray);
 
@@ -88,13 +87,10 @@ public class OnlineScoreHandler extends Observable {
 			    @Override
 			    public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
 			    	GameStatistics justArrivedScore = dataSnapshot.getValue(GameStatistics.class);
-				
-					
+									
 					if(System.currentTimeMillis()-justArrivedScore.getTimeOfAddingToScoreList() < 120000){
 						setChanged();
-						notifyObservers(new PushObject(justArrivedScore));				  	    	
-				    	System.out.println("New Score:"+justArrivedScore);
-						
+						notifyObservers(new PushObject(justArrivedScore));				  	    							
 					}
 			    }
 
@@ -110,10 +106,6 @@ public class OnlineScoreHandler extends Observable {
 			    @Override
 			    public void onCancelled(DatabaseError databaseError) {}
 			});
-			
-			
-			
-			
 			
 
 		} catch (IOException e) {

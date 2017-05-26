@@ -32,17 +32,21 @@ public class LiveHighScoreView extends VBox implements Observer {
 	OnlineScoreHandler onlineScoreHandler;
 	GameStatistics activeStats;
 	Config conf;
-	int boardSize;
+	// int boardSize;
 	int maxNumberOfScoresOnExtract;
 
 	ObservableList<GameStatistics> masterList;
 
 	@SuppressWarnings({ "rawtypes" })
-	public LiveHighScoreView(Highscore highscoreManager, int boardSize) {
+	public LiveHighScoreView(GameEngine engine, OnlineScoreHandler onlineScoreHandler, Highscore highscoreManager) {
 
+		this.engine = engine;
+		engine.addObserver(this);
+		this.onlineScoreHandler = onlineScoreHandler;
+		onlineScoreHandler.addObserver(this);
 		this.highscoreManager = highscoreManager;
 
-		this.boardSize = boardSize;
+		// this.boardSize = boardSize;
 		maxNumberOfScoresOnExtract = Config.getInstance().getPropertyAsInt("maxNumberOfScoresOnExtract");
 
 		conf = Config.getInstance();
@@ -101,20 +105,10 @@ public class LiveHighScoreView extends VBox implements Observer {
 		this.activeStats = null;
 	}
 
-	public void setOnlineScoreHandler(OnlineScoreHandler onlineScoreHandler) {
-		this.onlineScoreHandler = onlineScoreHandler;
-		onlineScoreHandler.addObserver(this);
-	}
-
-	public void setGameEngine(GameEngine engine) {
-		this.engine = engine;
-		engine.addObserver(this);
-	}
-
 	public void refreshContent() {
 
-		List scoreList = highscoreManager.getListExtract(boardSize, maxNumberOfScoresOnExtract, activeStats);
-
+		List scoreList = highscoreManager.getListExtract(engine.getBoardSize(), maxNumberOfScoresOnExtract, activeStats);
+System.out.println("Was here");
 		masterList = FXCollections.observableArrayList(scoreList);
 		table.setItems(masterList);
 

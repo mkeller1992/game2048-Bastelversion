@@ -3,31 +3,22 @@ package ch.bfh.game2048.persistence;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.lang3.StringUtils;
-
 import ch.bfh.game2048.model.Highscore;
 
 public class ScoreHandler {
 
-
-
-	
-	public void writeScores(){
-		
-		Config.getInstance().getPropertyAsInt("highscoreFileName");
-		
-		System.out.println("Was at least here");
-		writeScores();
-	}
-	
+	final static String APPDATA_PATH = System.getenv("APPDATA")+"/";
 	
 	public void writeScores(Highscore highscores, String xmlName) throws JAXBException, FileNotFoundException {
 
@@ -45,23 +36,37 @@ public class ScoreHandler {
 		m.marshal(highscores, System.out);
 
 		// Write to File
-		m.marshal(highscores, new File(xmlName));
+		m.marshal(highscores, new File(APPDATA_PATH+xmlName));
 	}
 
 	public Highscore readScores(String xmlName) throws JAXBException, FileNotFoundException {
-
+		
+		createDBIfNotExist(APPDATA_PATH+xmlName);
+		
 		JAXBContext context = JAXBContext.newInstance(Highscore.class);
 
 		// get variables from our xml file, created before
 		// System.out.println("Output from our XML File: ");
 		Unmarshaller um = context.createUnmarshaller();
 
-		Highscore highscores = (Highscore) um.unmarshal(new FileReader(xmlName));
+		Highscore highscores = (Highscore) um.unmarshal(new FileReader(APPDATA_PATH+xmlName));
 
 		// for (GameStatistics g : highscores.getHighscore()) {
 		// System.out.println(g.getScore());
 		// }
 		return highscores;
+	}
+	
+	private void createDBIfNotExist(String fullPath){
+
+		Path path = Paths.get(fullPath);
+		
+		if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS))
+			try {
+				Files.createFile(path);
+				writeScores(new Highscore(), Config.getInstance().getPropertyAsString("highscoreFileName"));
+			} catch (IOException | JAXBException e) {
+			}	
 	}
 
 }
