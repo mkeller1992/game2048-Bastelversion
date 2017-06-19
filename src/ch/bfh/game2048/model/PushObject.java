@@ -1,5 +1,8 @@
 package ch.bfh.game2048.model;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -19,12 +22,12 @@ public class PushObject {
 		return statisticsObject;
 	}
 
-
 	public TextFlow toText() {
 
 		Text name = new Text(statisticsObject.getPlayerName());
 		Text reached = new Text(" reached ");
-		Text score = new Text("" + statisticsObject.getScore()+" Pts");
+		String formattedScore = NumberFormat.getNumberInstance(Locale.getDefault()).format(statisticsObject.getScore());
+		Text score = new Text("" + formattedScore + " Pts");
 
 		Text boardSize = new Text(" on a " + statisticsObject.getBoardSize() + "x" + statisticsObject.getBoardSize() + " board");
 
@@ -39,7 +42,7 @@ public class PushObject {
 		score.setFill(Color.WHITE);
 		boardSize.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
 		boardSize.setFill(Color.LIGHTGREY);
-		
+
 		return result;
 
 	}

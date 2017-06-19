@@ -13,7 +13,6 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import com.google.firebase.database.DatabaseReference;
 
 import ch.bfh.game2048.Main;
-import ch.bfh.game2048.Paginatior;
 import ch.bfh.game2048.engine.GameEngine;
 import ch.bfh.game2048.model.Direction;
 import ch.bfh.game2048.model.GameStatistics;
@@ -44,7 +43,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -74,7 +72,7 @@ public class MainUIController implements Observer {
 	private Label labelTimerTime;
 
 	@FXML
-	private ComboBox boardSizeComboBox;
+	private ComboBox<BoardSizes> boardSizeComboBox;
 
 	@FXML
 	private Label labelTimerName;
@@ -110,7 +108,6 @@ public class MainUIController implements Observer {
 	private OnlineScoreHandler onlineScoreHandler;
 	private Timer timer;
 	private Highscore highscoreList;
-	private String playerName;
 	private Config conf;
 
 	private Timeline timeline;
@@ -128,13 +125,10 @@ public class MainUIController implements Observer {
 		timer = new Timer();
 		timer.addObserver(this);
 
-		
 		highscoreList = scoreHandler.readScores(conf.getPropertyAsString("highscoreFileName"));
 
-		// setSizeOfBoard(4);
 		initializeBoard();
 
-		pauseResumeButton.setVisible(false);
 		initializeBoardSizeComboBox();
 
 		onlineScoreHandler = new OnlineScoreHandler();
@@ -146,20 +140,11 @@ public class MainUIController implements Observer {
 		liveHighscorePane = new LiveHighScoreView(game, onlineScoreHandler, highscoreList);
 		vBoxLiveScore.getChildren().add(liveHighscorePane);
 		
-		labelTimerTime.setText("00:00:00");
-		styleLabels();
+		labelScoreName.setVisible(false);
 
 	}
 
-	// Setter and Getter Methods:
-
-	public String getPlayerName() {
-		return playerName;
-	}
-
-	public void setPlayerName(String playerName) {
-		this.playerName = playerName;
-	}
+	// Switch from main-screen to highscore-screen and vice versa:
 
 	public void switchScene(Scenes nextScene, int rankToHighlight) {
 
@@ -168,7 +153,6 @@ public class MainUIController implements Observer {
 		case MAINSCENE:
 			Scene scene1 = startButton.getScene();
 			Main.getStage().setScene(scene1);
-
 			break;
 		case HIGHSCORE:
 
@@ -180,12 +164,9 @@ public class MainUIController implements Observer {
 
 			HighScorePane highScorePane = new HighScorePane(highscoreList, this, game.getBoardSize());
 			highScorePane.highlightRow(rankToHighlight - 1);
-
 			Scene scene2 = new Scene(highScorePane, 770, 550);
 			scene2.getStylesheets().add(startButton.getScene().getStylesheets().get(0));
 			Main.getStage().setScene(scene2);
-			break;
-		case SETTINGS:
 			break;
 		default:
 			break;
@@ -194,7 +175,7 @@ public class MainUIController implements Observer {
 		centerStage();
 	}
 
-	// Event-Handlers
+	// If "Start"-button was pressed, initialize and start new game:
 
 	@FXML
 	void startGame(ActionEvent event) {
@@ -212,41 +193,56 @@ public class MainUIController implements Observer {
 		timer.start();
 
 		mapTilesOnLabels(game.getBoard());
-//		labelScoreNumber.setText("0");
 
 		startButton.setText(conf.getPropertyAsString("restart.button"));
 		pauseResumeButton.setText("Pause");
 		pauseResumeButton.setVisible(true);
+		labelScoreName.setVisible(true);
+		
+		gameBoard.requestFocus();
 	}
+
+	// If a game is currently ongoing or paused --> Switch between pause and resume
 
 	@FXML
 	void pauseResume(ActionEvent event) {
 
-		// If a game is currently ongoing or paused --> Switch between pause and
-		// resume
+		// If there is an unfinished game on the board:
+
 		if (game.isGameHasBeenStarted()) {
+
+			// After "Pause" was clicked:
+
 			if (game.isActiveAndRunning()) {
 				timer.stop();
-				System.out.println("Timer stop");
 				game.timePause();
 				pauseResumeButton.setText(conf.getPropertyAsString("resume.button"));
+
+				// After "Resume" was clicked:
+
 			} else {
 				timer.start();
-				System.out.println("Timer start");
 				game.timeResume();
 				pauseResumeButton.setText(conf.getPropertyAsString("pause.button"));
 			}
 		}
+		gameBoard.requestFocus();
 	}
+
+	// Show the Highscore-Screen
 
 	@FXML
 	void showHighScore(ActionEvent event) {
 		switchScene(Scenes.HIGHSCORE, 1);
+		
+		gameBoard.requestFocus();
 	}
 
+	// Navigation: Move tiles by keystrokes: up, down, left, right
+	// If move was valid: Paint new constellation on game-board
+
 	private void installEventHandler(final Scene scene) {
-		// handler for enter key press / release events, other keys are
-		// handled by the parent (keyboard) node handler
+
 		final EventHandler<KeyEvent> keyEventHandler = new EventHandler<KeyEvent>() {
 			public void handle(final KeyEvent keyEvent) {
 
@@ -268,9 +264,6 @@ public class MainUIController implements Observer {
 
 					if (moved) {
 						mapTilesOnLabels(game.getBoard());
-						String formattedScore = NumberFormat.getNumberInstance(Locale.getDefault()).format(game.getStats().getScore());
-						labelScoreNumber.setText("" + formattedScore + " Pts");
-						// liveHighscorePane.refreshContent();
 					}
 				}
 				keyEvent.consume();
@@ -279,10 +272,9 @@ public class MainUIController implements Observer {
 		scene.setOnKeyPressed(keyEventHandler);
 	}
 
-	@SuppressWarnings("unchecked")
-	public void initializeBoardSizeComboBox() {
+	// Set comboBox with list of board-sizes:
 
-		// Set comboBox with list of board-sizes:
+	public void initializeBoardSizeComboBox() {
 
 		boardSizeComboBox.getItems().setAll(BoardSizes.values());
 
@@ -296,6 +288,8 @@ public class MainUIController implements Observer {
 		});
 		boardSizeComboBox.setFocusTraversable(false);
 	}
+
+	// Assemble board with empty tiles:
 
 	private void initializeBoard() {
 
@@ -328,39 +322,24 @@ public class MainUIController implements Observer {
 		}
 	}
 
-	private void styleLabels() {
-
-		labelScoreName.setTextFill(Color.LIGHTGREY);
-
-		labelScoreNumber.setTextFill(Color.LIGHTGREY);
-
-		labelTimerTime.setTextFill(Color.LIGHTGREY);
-
-		labelTimerName.setTextFill(Color.LIGHTGREY);
-
-		labelLiveScore.setTextFill(Color.LIGHTGREY);
-
-		labelTimerTime.setTextFill(Color.LIGHTGREY);
-		
-		labelScoreNumber.setTextFill(Color.LIGHTGREY);
-
-	}
-
 	// moves the stage to the center of the screen --> After change of scene
+
 	private void centerStage() {
 		Stage stage = Main.getStage();
 		Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
 		stage.setX((screenBounds.getWidth() - stage.getWidth()) / 2);
 		stage.setY((screenBounds.getHeight() - stage.getHeight()) / 2);
-
 	}
+
+	// Switch from one board size to another (triggered by Combobox)
 
 	private void switchBoardSize(int boardSize) {
 
 		timer.reset();
 
 		labelScoreNumber.setText("");
-		pauseResumeButton.setText("Pause");
+		pauseResumeButton.setText(conf.getPropertyAsString("pause.button"));
+		
 		game.resetGame();
 		game.setBoardSize(boardSize);
 		initializeBoard();
@@ -370,13 +349,13 @@ public class MainUIController implements Observer {
 
 		pauseResumeButton.setVisible(false);
 		startButton.setText(conf.getPropertyAsString("start.button"));
-
+		labelScoreName.setVisible(false);
 	}
+
+	// put text and style on labels based on current Tile-Array
 
 	private void mapTilesOnLabels(Tile[][] tileArray) {
 
-		System.out.println(tileArray.length);
-		
 		int i = 0;
 		int j = 0;
 		for (SuperLabel[] row : labelList) {
@@ -414,6 +393,8 @@ public class MainUIController implements Observer {
 		}
 	}
 
+	// if information comes from Online-Score-Handler (incoming scores)
+
 	public void update(Observable o, Object arg) {
 
 		if (arg instanceof PushObject) {
@@ -433,7 +414,7 @@ public class MainUIController implements Observer {
 						timeOfLastArrivalMilis = System.currentTimeMillis();
 						displayTickerText(newScore.toText());
 					}
-					displayTopRightText(newScore);
+					displayTopRightText(newScore.getStatisticsObject());
 					labelLiveScore.setText("");
 				}
 
@@ -444,6 +425,8 @@ public class MainUIController implements Observer {
 				}
 			}).start();
 		}
+
+		// if information comes from stopWatch (Timer)
 
 		else if (o instanceof Timer) {
 
@@ -456,19 +439,26 @@ public class MainUIController implements Observer {
 			});
 		}
 
+		// if information comes from game-engine
+
 		else if (arg instanceof String) {
 
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
 
-					String pushObject = (String) arg;
+					String infoFromEngine = (String) arg;
 
-					if (pushObject.equals("gameOver")) {
+					if (infoFromEngine.equals("wasMerged")) {
+						String formattedScore = NumberFormat.getNumberInstance(Locale.getDefault()).format(game.getStats().getScore());
+						labelScoreNumber.setText("" + formattedScore + " Pts");
+					}
+
+					else if (infoFromEngine.equals("gameOver")) {
 						processGameOver(game.getStats());
 					}
 
-					else if (pushObject.equals("gameWon")) {
+					else if (infoFromEngine.equals("gameWon")) {
 						VictoryAlert dialog = new VictoryAlert(conf.getPropertyAsString("victoryTitle.alert"), conf.getPropertyAsString("victoryText.alert"));
 						boolean continuation = dialog.show();
 						if (continuation) {
@@ -499,8 +489,6 @@ public class MainUIController implements Observer {
 		}
 
 		TextFlow tickerMessage = tickerText;
-		// tickerMessage.setTextOrigin(VPos.TOP);
-		// tickerMessage.setFont(Font.font(24));
 
 		tickerPane.getChildren().add(tickerMessage);
 
@@ -520,37 +508,45 @@ public class MainUIController implements Observer {
 		// timeline.setCycleCount(Timeline.INDEFINITE);
 
 		timeline.play();
-
 	}
 
-	private void displayTopRightText(PushObject newScore) {
+	/**
+	 * Display local or incoming scores on the top-right of the screen
+	 * 
+	 * @param newScore
+	 *            local or incoming object containing game-statistics
+	 */
 
-		String playerName = newScore.getStatisticsObject().getPlayerName();
-		int score = newScore.getStatisticsObject().getScore();
+	private void displayTopRightText(GameStatistics newScore) {
+
+		String formattedScore = NumberFormat.getNumberInstance(Locale.getDefault()).format(newScore.getScore());
 		newScoreArrivedDate.setText("Latest score committed:" + "\n");
-		newScoreArrivedPoints.setText(playerName + " " + score + " Pts.");
-		newScoreArrivedDate.setTextFill(Color.LIGHTGREY);
-		newScoreArrivedPoints.setTextFill(Color.WHITE);
-		System.out.println(newScore.getStatisticsObject().getPlayerName() + " made a new record");
+		newScoreArrivedPoints.setText(newScore.getPlayerName() + " " + formattedScore + " Pts.");
 	}
+
+	// Make the score displayed on the top-right disappear:
 
 	private void removeNewIncomingScore() {
 		newScoreArrivedDate.setText("");
 		newScoreArrivedPoints.setText("");
 	}
 
+	// In case of game-over: Stop time, add game-statistics, write them to internal and external DB
+
 	private void processGameOver(GameStatistics stats) {
-		
+
 		timer.stop();
 		pauseResumeButton.setVisible(false);
 		startButton.setText(conf.getPropertyAsString("restart.button"));
-		
+
 		GameOverDialog dialog = new GameOverDialog(conf.getPropertyAsString("gameOverDialog.title"), stats.getScore());
 		if (dialog.showAndWait().isPresent()) {
 
 			stats.setPlayerName(dialog.getPlayerName());
 			stats.setTimeOfAddingToScoreList(System.currentTimeMillis());
 			highscoreList.addHighscore(stats);
+
+			// To be able to recognize if a new score was local or incoming
 			highscoreList.setLastLocalScore(stats);
 
 			int rankOnHighscoreList = highscoreList.getRankOfListEntry(highscoreList.getFilteredHighscoreList(game.getBoardSize()), stats);
@@ -565,5 +561,4 @@ public class MainUIController implements Observer {
 			databaseRef.push().setValue(stats);
 		}
 	}
-
 }

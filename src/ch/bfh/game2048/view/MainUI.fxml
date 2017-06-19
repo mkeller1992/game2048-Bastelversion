@@ -31,24 +31,24 @@
             				<RowConstraints minHeight="10.0" prefHeight="100.0" />
             			</rowConstraints>
             			<children>
-            				<Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" text="Start" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            				<Button fx:id="pauseResumeButton" mnemonicParsing="false" onAction="#pauseResume" text="Pause" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            				<Label fx:id="labelScoreName" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="Score:" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            				<Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" text="Play Game" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            				<Button fx:id="pauseResumeButton" mnemonicParsing="false" onAction="#pauseResume" text="Pause" visible="false" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+            				<Label fx:id="labelScoreName" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="Score:" textFill="#d3d3d3" GridPane.columnIndex="1" GridPane.rowIndex="0">
             					<font>
             						<Font name="System Bold" size="25.0" />
             					</font>
             				</Label>
-            				<Label fx:id="labelScoreNumber" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            				<Label fx:id="labelScoreNumber" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" textFill="#d3d3d3" GridPane.columnIndex="2" GridPane.rowIndex="0">
             					<font>
             						<Font name="System Bold" size="25.0" />
             					</font>
             				</Label>
-            				<Label fx:id="labelTimerName" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="Time:" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            				<Label fx:id="labelTimerName" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="Time:" textFill="#d3d3d3" GridPane.columnIndex="1" GridPane.rowIndex="1">
             					<font>
             						<Font size="25.0" />
             					</font>
             				</Label>
-            				<Label fx:id="labelTimerTime" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+            				<Label fx:id="labelTimerTime" contentDisplay="CENTER" graphicTextGap="6.0" prefHeight="50" prefWidth="150.0" text="00:00:00" textFill="#d3d3d3" GridPane.columnIndex="2" GridPane.rowIndex="1">
             					<font>
             						<Font size="25.0" />
             					</font>
@@ -72,17 +72,17 @@
                      <children>
                         <VBox alignment="CENTER" prefHeight="95.0" prefWidth="302.0">
                            <children>
-                              <Label fx:id="newScoreArrivedDate" layoutX="158.0" layoutY="24.0">
+                              <Label fx:id="newScoreArrivedDate" layoutX="158.0" layoutY="24.0" textFill="#d3d3d3">
                                  <font>
                                     <Font size="15.0" />
                                  </font>
                               </Label>
-                              <Label fx:id="newScoreArrivedPoints" textFill="#ff0303">
+                              <Label fx:id="newScoreArrivedPoints" textFill="#ffffff">
                                  <font>
                                     <Font name="System Bold" size="20.0" />
                                  </font>
                               </Label>
-                              <Label fx:id="labelLiveScore" text="Live-Scores:">
+                              <Label fx:id="labelLiveScore" text="Live-Scores:" textFill="#d3d3d3">
                                  <font>
                                     <Font size="20.0" />
                                  </font>

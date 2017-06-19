@@ -1,12 +1,7 @@
 package ch.bfh.game2048.view;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
-
-import ch.bfh.game2048.Main;
 import ch.bfh.game2048.model.GameStatistics;
 import ch.bfh.game2048.model.Highscore;
 import ch.bfh.game2048.persistence.Config;
@@ -15,7 +10,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -102,7 +96,7 @@ public class HighScorePane extends VBox {
 
 		tblRank.setCellValueFactory(new PropertyValueFactory<GameStatistics, String>("rankAsString"));
 		tblName.setCellValueFactory(new PropertyValueFactory<GameStatistics, String>("playerName"));
-		tblScore.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("score"));
+		tblScore.setCellValueFactory(new PropertyValueFactory<GameStatistics, String>("scoreAsString"));
 		tblHighestTile.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("highestValue"));
 		tblDuration.setCellValueFactory(new PropertyValueFactory<GameStatistics, Long>("formattedDuration"));
 		tblNumbOfMoves.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("amountOfMoves"));

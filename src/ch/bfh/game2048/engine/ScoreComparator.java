@@ -8,8 +8,8 @@ public class ScoreComparator implements Comparator<GameStatistics> {
 	@Override
 	public int compare(GameStatistics p1, GameStatistics p2) {
 		
-		int points1 = p1.getScore();
-		int points2 = p2.getScore();
+		int points1 = Integer.parseInt(p1.getScoreAsString());
+		int points2 = Integer.parseInt(p2.getScoreAsString());
 		
 		int highestTile1 = p1.getHighestValue();
 		int highestTile2 = p2.getHighestValue();
@@ -35,10 +35,10 @@ public class ScoreComparator implements Comparator<GameStatistics> {
 			return 1;
 		}
 	
-		if(duration1 > duration2){
+		if(duration1 < duration2){
 			return -1;
 		}
-		if(duration1 < duration2){
+		if(duration1 > duration2){
 			return 1;
 		}
 	

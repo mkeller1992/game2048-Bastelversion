@@ -17,8 +17,7 @@ public class GameEngine extends Observable {
 
 	private boolean gameOver = false;
 	private boolean gameContinue = false;
-	private boolean stopWatchSuspended = false;
-	
+	private boolean stopWatchSuspended = false;	
 	private boolean gameHasBeenStarted = false;
 	private boolean activeAndRunning = false;
 
@@ -68,6 +67,8 @@ public class GameEngine extends Observable {
 
 		stats.setStartMil(System.currentTimeMillis());
 		stopWatch.start();
+		gameOver = false;
+		gameContinue = false;
 		stopWatchSuspended = false;
 		gameHasBeenStarted=true;
 		activeAndRunning=true;
@@ -288,11 +289,11 @@ public class GameEngine extends Observable {
 				board[row + dir.getRowStep()][col + dir.getColStep()].setMerged(true);
 
 				stats.addScore(mergedValue);
+				stats.setScoreAsString(""+stats.getScore());
 
 				if (mergedValue > 0) {
 					setChanged();
 					notifyObservers("wasMerged");
-					System.out.println(stopWatch.getTime());
 				}
 
 				if (isGameContinue() == false && mergedValue == Config.getInstance().getPropertyAsInt("winningNumber")) {

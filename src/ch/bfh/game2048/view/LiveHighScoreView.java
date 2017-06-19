@@ -67,9 +67,9 @@ public class LiveHighScoreView extends VBox implements Observer {
 		tblName.setSortable(false);
 		tblScore.setSortable(false);
 
-		tblRank.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("rankAsString"));
+		tblRank.setCellValueFactory(new PropertyValueFactory<GameStatistics, String>("rankAsString"));
 		tblName.setCellValueFactory(new PropertyValueFactory<GameStatistics, String>("playerName"));
-		tblScore.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("score"));
+		tblScore.setCellValueFactory(new PropertyValueFactory<GameStatistics, Integer>("scoreAsString"));
 
 		table.getColumns().addAll(tblRank, tblName, tblScore);
 
@@ -108,7 +108,7 @@ public class LiveHighScoreView extends VBox implements Observer {
 	public void refreshContent() {
 
 		List scoreList = highscoreManager.getListExtract(engine.getBoardSize(), maxNumberOfScoresOnExtract, activeStats);
-System.out.println("Was here");
+
 		masterList = FXCollections.observableArrayList(scoreList);
 		table.setItems(masterList);
 
